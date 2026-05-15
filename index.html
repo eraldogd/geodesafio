@@ -4,738 +4,660 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GeoDesafio — Onde no Mundo?</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-  :root {
-    --c-bg: #0a0e1a;
-    --c-surface: #111827;
-    --c-surface2: #1c2537;
-    --c-border: rgba(255,255,255,0.1);
-    --c-gold: #f5c842;
-    --c-gold2: #e8a020;
-    --c-teal: #22d3b8;
-    --c-red: #ef4444;
-    --c-text: #f1f5f9;
-    --c-muted: #94a3b8;
-    --c-correct: #22c55e;
-    --font-display: 'Georgia', serif;
-    --font-body: system-ui, sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--c-bg);
-    color: var(--c-text);
-    font-family: var(--font-body);
-    min-height: 100vh;
-    overflow: hidden;
-  }
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#f0ede8;--border:rgba(0,0,0,.1);
+  --gold:#c8860a;--gold-light:#fef3dc;--gold-btn:#e8a020;
+  --teal:#0d7a5f;--red:#c0392b;--red-light:#fdecea;
+  --text:#1a1a1a;--muted:#6b7280;--hint:#1d6fa4;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min-height:100vh;overflow:hidden;}
 
-  /* ── TELA INICIAL ── */
-  #screen-setup {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    min-height: 100vh; padding: 2rem; gap: 2rem;
-  }
-  .logo {
-    text-align: center;
-  }
-  .logo h1 {
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    color: var(--c-gold);
-    letter-spacing: 0.05em;
-    text-shadow: 0 0 40px rgba(245,200,66,0.3);
-  }
-  .logo p { color: var(--c-muted); margin-top: 0.5rem; font-size: 1rem; }
+/* ── SETUP ── */
+#screen-setup{display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:2rem 1rem;gap:1.25rem;overflow-y:auto;justify-content:flex-start;padding-top:2.5rem;}
+.logo h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:var(--gold);text-align:center;letter-spacing:-.02em;}
+.logo p{color:var(--muted);text-align:center;margin-top:4px;font-size:.95rem;}
+.globe{font-size:2.5rem;text-align:center;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem 1.5rem;width:100%;max-width:640px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
+.card h2{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem;}
 
-  .globe-anim {
-    width: 80px; height: 80px; margin: 0 auto 1rem;
-    border: 3px solid var(--c-gold);
-    border-radius: 50%;
-    position: relative;
-    animation: spin 8s linear infinite;
-    box-shadow: 0 0 30px rgba(245,200,66,0.2);
-  }
-  .globe-anim::before {
-    content: '🌍';
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%,-50%);
-    font-size: 40px;
-    animation: spin-rev 8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  @keyframes spin-rev { to { transform: rotate(-360deg); } }
+/* Config row */
+.cfg-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:.5rem;}
+.cfg-item{display:flex;flex-direction:column;gap:4px;}
+.cfg-item label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
+.cfg-item select,.cfg-item input[type=number]{
+  background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;
+  padding:8px 10px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s;
+  -webkit-appearance:none;appearance:none;cursor:pointer;
+}
+.cfg-item select:focus,.cfg-item input[type=number]:focus{border-color:var(--gold);}
 
-  .setup-card {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: 16px;
-    padding: 2rem;
-    width: 100%;
-    max-width: 600px;
-  }
-  .setup-card h2 {
-    font-size: 1rem; color: var(--c-gold); text-transform: uppercase;
-    letter-spacing: 0.1em; margin-bottom: 1.25rem;
-  }
-  .groups-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
-  }
-  .group-input-wrap {
-    display: flex; flex-direction: column; gap: 4px;
-  }
-  .group-input-wrap label {
-    font-size: 11px; color: var(--c-muted); text-transform: uppercase; letter-spacing: 0.08em;
-  }
-  .group-input-wrap input {
-    background: var(--c-surface2); border: 1px solid var(--c-border);
-    border-radius: 8px; padding: 8px 12px; color: var(--c-text);
-    font-size: 14px; outline: none; transition: border-color 0.2s;
-  }
-  .group-input-wrap input:focus { border-color: var(--c-gold); }
-  .group-input-wrap input::placeholder { color: var(--c-muted); }
+/* grupos grid — dinâmico */
+.groups-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
+.group-input-wrap{display:flex;flex-direction:column;gap:3px;}
+.group-input-wrap label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
+.group-input-wrap input{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s;}
+.group-input-wrap input:focus{border-color:var(--gold);}
+.group-input-wrap input::placeholder{color:#bbb;}
 
-  .btn-start {
-    background: var(--c-gold);
-    color: #0a0e1a;
-    border: none; border-radius: 10px;
-    padding: 14px 40px;
-    font-size: 1.1rem; font-weight: 700;
-    cursor: pointer; transition: all 0.2s;
-    letter-spacing: 0.05em;
-    box-shadow: 0 0 20px rgba(245,200,66,0.3);
-  }
-  .btn-start:hover { background: var(--c-gold2); transform: translateY(-1px); box-shadow: 0 0 30px rgba(245,200,66,0.5); }
-  .btn-start:active { transform: translateY(0); }
+/* hint penalty selector */
+.penalty-opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
+.penalty-opt{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;transition:all .15s;user-select:none;}
+.penalty-opt:hover{border-color:var(--hint);}
+.penalty-opt.selected{background:#dbeeff;border-color:var(--hint);color:var(--hint);font-weight:700;}
 
-  /* ── TELA DO JOGO ── */
-  #screen-game {
-    display: none; position: fixed; inset: 0; background: #000;
-  }
-  #sv-container {
-    position: absolute; inset: 0;
-  }
-  #sv-container iframe {
-    width: 100%; height: 100%; border: none;
-  }
+.btn-primary{background:var(--gold-btn);color:#fff;border:none;border-radius:10px;padding:13px 48px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(200,130,10,.25);align-self:center;}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px);}
 
-  /* HUD topo */
-  #hud-top {
-    position: absolute; top: 0; left: 0; right: 0;
-    padding: 12px 20px;
-    display: flex; align-items: center; gap: 16px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%);
-    pointer-events: none;
-  }
-  .hud-pill {
-    background: rgba(0,0,0,0.6);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 20px;
-    padding: 6px 16px;
-    font-size: 13px; color: var(--c-text);
-    backdrop-filter: blur(8px);
-    pointer-events: auto;
-  }
-  .hud-pill strong { color: var(--c-gold); }
-  #timer-pill {
-    font-size: 20px; font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    min-width: 70px; text-align: center;
-    transition: color 0.3s;
-  }
-  #timer-pill.urgent { color: var(--c-red) !important; }
-  #round-info { flex: 1; }
-  #scores-pill { cursor: pointer; }
+/* ── TRANSIÇÃO ── */
+#screen-transition{display:none;position:fixed;inset:0;background:var(--bg);z-index:400;flex-direction:column;align-items:center;justify-content:center;gap:1.25rem;}
+#screen-transition h2{font-size:1rem;color:var(--muted);}
+#screen-transition h1{font-size:2.4rem;font-weight:800;color:var(--gold);}
+#screen-transition p{color:var(--muted);font-size:.95rem;}
+.btn-go{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:13px 48px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(13,122,95,.25);}
+.btn-go:hover{opacity:.9;transform:translateY(-1px);}
 
-  /* MINIMAPA */
-  #minimap-wrap {
-    position: absolute; bottom: 20px; right: 20px;
-    width: 200px; height: 150px;
-    transition: all 0.3s ease;
-    border-radius: 12px; overflow: hidden;
-    border: 2px solid rgba(255,255,255,0.2);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    cursor: crosshair;
-    z-index: 100;
-  }
-  #minimap-wrap:hover, #minimap-wrap.expanded {
-    width: 360px; height: 280px;
-  }
-  #minimap { width: 100%; height: 100%; }
+/* ── JOGO ── */
+#screen-game{display:none;position:fixed;inset:0;background:#000;}
+#sv-container{position:absolute;inset:0;}
+#sv-container iframe{width:100%;height:100%;border:none;}
 
-  #confirm-btn {
-    position: absolute; bottom: 20px; right: 232px;
-    background: var(--c-gold); color: #000;
-    border: none; border-radius: 10px;
-    padding: 12px 24px; font-size: 15px; font-weight: 700;
-    cursor: pointer; z-index: 100;
-    transition: all 0.2s;
-    box-shadow: 0 4px 16px rgba(245,200,66,0.4);
-    display: none;
-  }
-  #confirm-btn:hover { background: var(--c-gold2); transform: scale(1.03); }
+#hud-top{position:absolute;top:0;left:0;right:0;padding:10px 14px;display:flex;align-items:center;gap:8px;background:linear-gradient(to bottom,rgba(255,255,255,.93) 0%,transparent 100%);pointer-events:none;}
+.hud-pill{background:rgba(255,255,255,.93);border:1px solid rgba(0,0,0,.11);border-radius:20px;padding:5px 13px;font-size:13px;color:var(--text);backdrop-filter:blur(4px);pointer-events:auto;white-space:nowrap;}
+.hud-pill strong{color:var(--gold);}
+#timer-pill{font-size:19px;font-weight:800;min-width:68px;text-align:center;font-variant-numeric:tabular-nums;}
+#timer-pill.urgent{color:var(--red);}
+#timer-pill.warning{color:#d97706;}
 
-  #minimap-hint {
-    position: absolute; bottom: 180px; right: 20px;
-    background: rgba(0,0,0,0.7); color: var(--c-muted);
-    font-size: 11px; padding: 4px 10px; border-radius: 6px;
-    pointer-events: none; z-index: 101; white-space: nowrap;
-    transition: opacity 0.3s;
-  }
+/* minimapa */
+#minimap-wrap{position:absolute;bottom:68px;right:14px;width:195px;height:148px;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,.85);box-shadow:0 4px 20px rgba(0,0,0,.3);transition:width .3s,height .3s;cursor:crosshair;z-index:100;}
+#minimap-wrap:hover{width:370px;height:290px;}
+#minimap{width:100%;height:100%;}
 
-  /* ── TELA DE RESULTADO DO ROUND ── */
-  #screen-result {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.85); backdrop-filter: blur(6px);
-    z-index: 200; align-items: center; justify-content: center;
-  }
-  .result-card {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: 20px; padding: 2.5rem;
-    width: min(500px, 90vw);
-    text-align: center;
-  }
-  .result-location-name {
-    font-family: var(--font-display);
-    font-size: 1.6rem; color: var(--c-gold); margin-bottom: 0.5rem;
-  }
-  .result-country { color: var(--c-muted); font-size: 1rem; margin-bottom: 1.5rem; }
-  #result-map-mini { height: 200px; border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden; }
-  .result-groups-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 0.75rem; margin-bottom: 1.5rem;
-  }
-  .result-group-card {
-    background: var(--c-surface2);
-    border-radius: 10px; padding: 10px;
-    border: 1px solid var(--c-border);
-  }
-  .result-group-card.winner { border-color: var(--c-gold); background: rgba(245,200,66,0.08); }
-  .result-group-name { font-size: 12px; color: var(--c-muted); margin-bottom: 4px; }
-  .result-group-dist { font-size: 18px; font-weight: 700; color: var(--c-text); }
-  .result-group-card.winner .result-group-dist { color: var(--c-gold); }
-  .result-group-pts { font-size: 11px; color: var(--c-teal); margin-top: 2px; }
-  .no-guess { font-size: 12px; color: var(--c-red); }
+/* action bar — ÚNICO lugar de dica */
+#action-bar{position:absolute;bottom:14px;right:14px;display:flex;gap:8px;z-index:101;align-items:center;}
+#btn-hint{background:var(--hint);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 3px 10px rgba(29,111,164,.4);white-space:nowrap;}
+#btn-hint:hover:not(:disabled){opacity:.85;}
+#btn-hint:disabled{opacity:.38;cursor:not-allowed;background:#94a3b8;}
+#btn-confirm{background:var(--gold-btn);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 3px 14px rgba(200,130,10,.4);display:none;}
+#btn-confirm:hover{opacity:.9;transform:scale(1.02);}
 
-  .btn-next {
-    background: var(--c-teal); color: #000;
-    border: none; border-radius: 10px;
-    padding: 12px 36px; font-size: 1rem; font-weight: 700;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .btn-next:hover { opacity: 0.85; transform: translateY(-1px); }
+#minimap-hint{position:absolute;bottom:224px;right:14px;background:rgba(255,255,255,.92);color:var(--muted);font-size:11px;padding:4px 11px;border-radius:20px;pointer-events:none;z-index:101;white-space:nowrap;border:1px solid var(--border);transition:opacity .3s;}
 
-  /* ── TELA FINAL ── */
-  #screen-final {
-    display: none; position: fixed; inset: 0;
-    background: var(--c-bg);
-    z-index: 300; overflow-y: auto;
-    align-items: center; justify-content: center; flex-direction: column;
-    padding: 2rem;
-  }
-  #screen-final h1 {
-    font-family: var(--font-display);
-    color: var(--c-gold); font-size: 2.5rem; margin-bottom: 0.5rem;
-    text-align: center;
-  }
-  #screen-final p.subtitle { color: var(--c-muted); text-align: center; margin-bottom: 2rem; }
-  .podium {
-    width: min(500px, 90vw);
-    display: flex; flex-direction: column; gap: 12px; margin-bottom: 2rem;
-  }
-  .podium-row {
-    background: var(--c-surface);
-    border: 1px solid var(--c-border);
-    border-radius: 14px; padding: 16px 20px;
-    display: flex; align-items: center; gap: 16px;
-  }
-  .podium-row.gold { border-color: var(--c-gold); background: rgba(245,200,66,0.08); }
-  .podium-row.silver { border-color: #94a3b8; }
-  .podium-row.bronze { border-color: #b87333; }
-  .podium-rank { font-size: 1.5rem; min-width: 32px; }
-  .podium-name { flex: 1; font-size: 1rem; font-weight: 600; }
-  .podium-total { font-size: 1.3rem; font-weight: 700; color: var(--c-gold); }
-  .podium-unit { font-size: 11px; color: var(--c-muted); }
-  .btn-restart {
-    background: transparent; border: 1px solid var(--c-gold);
-    color: var(--c-gold); border-radius: 10px;
-    padding: 12px 36px; font-size: 1rem; font-weight: 600;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .btn-restart:hover { background: rgba(245,200,66,0.1); }
+/* ── RESULTADO ── */
+#screen-result{display:none;position:fixed;inset:0;background:rgba(245,244,240,.92);backdrop-filter:blur(6px);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:1rem;}
+.result-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:1.6rem;width:min(520px,96vw);box-shadow:0 8px 40px rgba(0,0,0,.12);overflow-y:auto;max-height:96vh;}
+.result-card h2{font-size:1.35rem;font-weight:800;color:var(--gold);margin-bottom:2px;}
+.result-card p.sub{color:var(--muted);font-size:.88rem;margin-bottom:.9rem;}
+#result-map-mini{height:195px;border-radius:12px;margin-bottom:.9rem;overflow:hidden;border:1px solid var(--border);}
+.res-row{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border-radius:10px;margin-bottom:5px;background:var(--surface2);border:1px solid var(--border);}
+.res-row.best{border-color:var(--gold);background:var(--gold-light);}
+.res-label{font-weight:600;font-size:.88rem;}
+.res-dist{font-size:.82rem;color:var(--muted);}
+.res-pts{font-size:1.05rem;font-weight:800;color:var(--gold);min-width:88px;text-align:right;}
+.res-pts.zero{color:var(--red);}
+.res-pts.good{color:var(--teal);}
+.penalty-tag{font-size:10px;color:var(--red);background:var(--red-light);padding:2px 7px;border-radius:10px;margin-left:5px;}
+.btn-next{width:100%;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:12px;font-size:.95rem;font-weight:700;cursor:pointer;margin-top:.9rem;transition:all .2s;}
+.btn-next:hover{opacity:.9;}
 
-  /* Leaflet override */
-  .leaflet-container { background: #1a2035; }
-  .leaflet-tile { filter: hue-rotate(180deg) invert(1) brightness(0.85); }
+/* ── PLACAR PARCIAL ── */
+#screen-partial{display:none;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:1.25rem;}
+#screen-partial h1{font-size:1.9rem;font-weight:800;text-align:center;}
+.scoreboard{width:min(500px,90vw);display:flex;flex-direction:column;gap:8px;}
+.score-row{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:12px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.score-row.leader{border-color:var(--gold);background:var(--gold-light);}
+.score-rank{font-size:1.3rem;min-width:26px;}
+.score-name{flex:1;font-weight:700;font-size:.95rem;}
+.score-pts-big{font-size:1.3rem;font-weight:800;color:var(--gold);}
+.score-pts-big.done{color:var(--teal);}
+.score-status{font-size:11px;color:var(--muted);}
+
+/* ── FINAL ── */
+#screen-final{display:none;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:1.25rem;overflow-y:auto;}
+#screen-final h1{font-size:2.3rem;font-weight:800;color:var(--gold);text-align:center;}
+.btn-restart{background:transparent;border:2px solid var(--gold);color:var(--gold);border-radius:10px;padding:11px 34px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-restart:hover{background:var(--gold-light);}
 </style>
 </head>
 <body>
 
-<!-- ══ TELA SETUP ══ -->
+<!-- ══ SETUP ══ -->
 <div id="screen-setup">
   <div class="logo">
-    <div class="globe-anim"></div>
+    <div class="globe">🌍</div>
     <h1>GeoDesafio</h1>
-    <p>Onde no mundo está esse lugar?</p>
+    <p>Identifique locais do mundo pelo Street View</p>
   </div>
-  <div class="setup-card">
-    <h2>Nome dos grupos</h2>
-    <div class="groups-grid" id="groups-grid">
-      <!-- gerado por JS -->
+
+  <!-- Configurações da partida -->
+  <div class="card">
+    <h2>Configurações da partida</h2>
+    <div class="cfg-row">
+      <div class="cfg-item">
+        <label>Nº de Grupos</label>
+        <select id="cfg-groups" onchange="buildGroupsUI()">
+          <option value="1">1 grupo</option>
+          <option value="2">2 grupos</option>
+          <option value="3">3 grupos</option>
+          <option value="4">4 grupos</option>
+          <option value="5" selected>5 grupos</option>
+          <option value="6">6 grupos</option>
+          <option value="7">7 grupos</option>
+          <option value="8">8 grupos</option>
+          <option value="9">9 grupos</option>
+          <option value="10">10 grupos</option>
+        </select>
+      </div>
+      <div class="cfg-item">
+        <label>Locais por grupo</label>
+        <select id="cfg-rounds">
+          <option value="1">1 local</option>
+          <option value="2">2 locais</option>
+          <option value="3">3 locais</option>
+          <option value="4">4 locais</option>
+          <option value="5" selected>5 locais</option>
+          <option value="6">6 locais</option>
+          <option value="7">7 locais</option>
+          <option value="8">8 locais</option>
+          <option value="9">9 locais</option>
+          <option value="10">10 locais</option>
+        </select>
+      </div>
+      <div class="cfg-item">
+        <label>Tempo por local</label>
+        <select id="cfg-time">
+          <option value="60">1 min</option>
+          <option value="90">1:30 min</option>
+          <option value="120" selected>2 min</option>
+          <option value="180">3 min</option>
+          <option value="300">5 min</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Raio da dica (novo) -->
+    <div class="cfg-row" style="margin-top:.5rem;">
+      <div class="cfg-item">
+        <label>Raio da dica</label>
+        <select id="cfg-radius">
+          <option value="1000" selected>1000 km</option>
+          <option value="1500">1500 km</option>
+          <option value="2000">2000 km</option>
+          <option value="2500">2500 km</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="margin-top:.75rem;">
+      <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem;">Penalidade por dica (desconto na pontuação)</div>
+      <div class="penalty-opts" id="penalty-opts">
+        <div class="penalty-opt" data-v="0.9" onclick="selectPenalty(this)">−10%</div>
+        <div class="penalty-opt" data-v="0.8" onclick="selectPenalty(this)">−20%</div>
+        <div class="penalty-opt" data-v="0.75" onclick="selectPenalty(this)">−25%</div>
+        <div class="penalty-opt" data-v="0.7" onclick="selectPenalty(this)">−30%</div>
+        <div class="penalty-opt" data-v="0.6" onclick="selectPenalty(this)">−40%</div>
+        <div class="penalty-opt selected" data-v="0.5" onclick="selectPenalty(this)">−50%</div>
+        <div class="penalty-opt" data-v="0.4" onclick="selectPenalty(this)">−60%</div>
+        <div class="penalty-opt" data-v="0.3" onclick="selectPenalty(this)">−70%</div>
+        <div class="penalty-opt" data-v="0.2" onclick="selectPenalty(this)">−80%</div>
+        <div class="penalty-opt" data-v="0.1" onclick="selectPenalty(this)">−90%</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;">Aplicado por dica usada. Máx. 2 dicas por grupo.</div>
     </div>
   </div>
-  <button class="btn-start" onclick="startGame()">▶ Iniciar Jogo</button>
+
+  <!-- Nomes dos grupos -->
+  <div class="card">
+    <h2>Nome dos grupos</h2>
+    <div class="groups-grid" id="groups-grid"></div>
+  </div>
+
+  <button class="btn-primary" onclick="startGame()">▶ Iniciar Jogo</button>
 </div>
 
-<!-- ══ TELA JOGO ══ -->
+<!-- ══ TRANSIÇÃO ══ -->
+<div id="screen-transition">
+  <h2 id="tr-sub">—</h2>
+  <h1 id="tr-name">—</h1>
+  <p id="tr-desc">—</p>
+  <button class="btn-go" onclick="beginGroupPlay()">Começar →</button>
+</div>
+
+<!-- ══ JOGO ══ -->
 <div id="screen-game">
-  <div id="sv-container">
-    <iframe id="sv-iframe" allowfullscreen></iframe>
-  </div>
-
+  <div id="sv-container"><iframe id="sv-iframe" allowfullscreen></iframe></div>
   <div id="hud-top">
-    <div class="hud-pill" id="timer-pill">2:00</div>
-    <div class="hud-pill" id="round-info">Local <strong id="round-num">1</strong> de <strong id="round-total">5</strong></div>
-    <div class="hud-pill" style="flex:1" id="current-group-hud">Grupo atual: <strong id="current-group-name">—</strong></div>
-    <div class="hud-pill" id="scores-pill" title="Pontuação acumulada">📊 Placar</div>
+    <div class="hud-pill" id="timer-pill">—</div>
+    <div class="hud-pill">Local <strong id="round-num">1</strong>/<span id="round-total">5</span></div>
+    <div class="hud-pill" style="flex:1">Grupo: <strong id="hud-group">—</strong></div>
+    <div class="hud-pill">Pts: <strong id="hud-pts">0</strong></div>
   </div>
-
-  <div id="minimap-hint">🗺 Marque sua resposta no mapa</div>
-  <div id="minimap-wrap">
-    <div id="minimap"></div>
+  <div id="minimap-hint">🗺 Clique no mapa para marcar</div>
+  <div id="minimap-wrap"><div id="minimap"></div></div>
+  <div id="action-bar">
+    <button id="btn-hint" onclick="useHint()">💡 Dica — 2 restantes</button>
+    <button id="btn-confirm" onclick="confirmGuess()">✓ Confirmar</button>
   </div>
-  <button id="confirm-btn" onclick="confirmGuess()">✓ Confirmar local</button>
 </div>
 
-<!-- ══ RESULTADO DO ROUND ══ -->
-<div id="screen-result" style="display:none; flex-direction:column;">
+<!-- ══ RESULTADO ROUND ══ -->
+<div id="screen-result" style="display:none;flex-direction:column;">
   <div class="result-card">
-    <div class="result-location-name" id="res-location-name">—</div>
-    <div class="result-country" id="res-location-country">—</div>
+    <h2 id="res-name">—</h2>
+    <p class="sub" id="res-country">—</p>
     <div id="result-map-mini"></div>
-    <div class="result-groups-grid" id="res-groups-grid"></div>
-    <button class="btn-next" id="btn-next" onclick="nextRound()">Próximo local →</button>
+    <div id="res-scores"></div>
+    <button class="btn-next" id="btn-next" onclick="nextAfterResult()">—</button>
   </div>
 </div>
 
-<!-- ══ RESULTADO FINAL ══ -->
-<div id="screen-final" style="display:none; flex-direction:column; align-items:center;">
+<!-- ══ PLACAR PARCIAL ══ -->
+<div id="screen-partial" style="display:none;flex-direction:column;align-items:center;">
+  <h1>📊 Placar Parcial</h1>
+  <p style="color:var(--muted);text-align:center;" id="partial-desc">—</p>
+  <div class="scoreboard" id="partial-board"></div>
+  <button class="btn-go" id="btn-partial-next" onclick="nextGroup()">—</button>
+</div>
+
+<!-- ══ FINAL ══ -->
+<div id="screen-final" style="display:none;flex-direction:column;align-items:center;">
   <h1>🏆 Resultado Final</h1>
-  <p class="subtitle">Menor distância total vence!</p>
-  <div class="podium" id="final-podium"></div>
-  <button class="btn-restart" onclick="restartGame()">↺ Jogar novamente</button>
+  <p style="color:var(--muted);margin-bottom:.5rem;">Maior pontuação total vence!</p>
+  <div class="scoreboard" id="final-board"></div>
+  <button class="btn-restart" onclick="location.reload()">↺ Jogar novamente</button>
 </div>
 
 <script>
-// ════════════════════════════════════════════
-//  BANCO DE LOCAIS — edite à vontade!
-//  Formato: { name, country, lat, lng, panoId }
-//  panoId: abra Google Maps > Street View >
-//   arraste o boneco > copie o ID da URL após "@"
-//   OU deixe em branco para usar coordenadas
-// ════════════════════════════════════════════
-const LOCATIONS = [
-  { name: "Torre Eiffel", country: "França 🇫🇷", lat: 48.8584, lng: 2.2945 },
-  { name: "Coliseu", country: "Itália 🇮🇹", lat: 41.8902, lng: 12.4922 },
-  { name: "Cristo Redentor", country: "Brasil 🇧🇷", lat: -22.9519, lng: -43.2105 },
-  { name: "Machu Picchu", country: "Peru 🇵🇪", lat: -13.1631, lng: -72.5450 },
-  { name: "Sagrada Família", country: "Espanha 🇪🇸", lat: 41.4036, lng: 2.1744 },
-  { name: "Big Ben", country: "Reino Unido 🇬🇧", lat: 51.5007, lng: -0.1246 },
-  { name: "Taj Mahal", country: "Índia 🇮🇳", lat: 27.1751, lng: 78.0421 },
-  { name: "Burj Khalifa", country: "Emirados Árabes 🇦🇪", lat: 25.1972, lng: 55.2744 },
-  { name: "Opera de Sydney", country: "Austrália 🇦🇺", lat: -33.8568, lng: 151.2153 },
-  { name: "Grande Muralha", country: "China 🇨🇳", lat: 40.4319, lng: 116.5704 },
-  { name: "Estátua da Liberdade", country: "EUA 🇺🇸", lat: 40.6892, lng: -74.0445 },
-  { name: "Kremlin", country: "Rússia 🇷🇺", lat: 55.7520, lng: 37.6175 },
-  { name: "Acrópole de Atenas", country: "Grécia 🇬🇷", lat: 37.9715, lng: 23.7267 },
-  { name: "Pirâmides de Gizé", country: "Egito 🇪🇬", lat: 29.9792, lng: 31.1342 },
-  { name: "Angkor Wat", country: "Camboja 🇰🇭", lat: 13.4125, lng: 103.8670 },
-  { name: "Chichén Itzá", country: "México 🇲🇽", lat: 20.6843, lng: -88.5678 },
-  { name: "Alhambra", country: "Espanha 🇪🇸", lat: 37.1768, lng: -3.5887 },
-  { name: "Ilha de Páscoa", country: "Chile 🇨🇱", lat: -27.1127, lng: -109.3497 },
-  { name: "Stonehenge", country: "Reino Unido 🇬🇧", lat: 51.1789, lng: -1.8262 },
-  { name: "Monte Fuji", country: "Japão 🇯🇵", lat: 35.3606, lng: 138.7274 },
-  { name: "Cidade do Vaticano", country: "Vaticano 🇻🇦", lat: 41.9022, lng: 12.4533 },
-  { name: "Palácio de Versalhes", country: "França 🇫🇷", lat: 48.8049, lng: 2.1204 },
-  { name: "Cataratas do Iguaçu", country: "Brasil/Argentina 🇧🇷", lat: -25.6953, lng: -54.4367 },
-  { name: "Buda em Bangkok", country: "Tailândia 🇹🇭", lat: 13.7467, lng: 100.4927 },
-  { name: "Canal de Veneza", country: "Itália 🇮🇹", lat: 45.4408, lng: 12.3155 },
-  { name: "Santorini", country: "Grécia 🇬🇷", lat: 36.3932, lng: 25.4615 },
-  { name: "Aeroporto de Hong Kong", country: "China (HK) 🇭🇰", lat: 22.3080, lng: 113.9185 },
-  { name: "Table Mountain", country: "África do Sul 🇿🇦", lat: -33.9628, lng: 18.4098 },
-  { name: "Catedral de São Basílio", country: "Rússia 🇷🇺", lat: 55.7525, lng: 37.6231 },
-  { name: "Palácio de Buckingham", country: "Reino Unido 🇬🇧", lat: 51.5014, lng: -0.1419 },
-  { name: "Monte Rushmore", country: "EUA 🇺🇸", lat: 43.8791, lng: -103.4591 },
-  { name: "Niágara", country: "EUA/Canadá 🇺🇸", lat: 43.0799, lng: -79.0747 },
-  { name: "Hagia Sophia", country: "Turquia 🇹🇷", lat: 41.0086, lng: 28.9802 },
-  { name: "Duomo de Florença", country: "Itália 🇮🇹", lat: 43.7731, lng: 11.2560 },
-  { name: "Petra", country: "Jordânia 🇯🇴", lat: 30.3285, lng: 35.4444 },
-  { name: "Pão de Açúcar", country: "Brasil 🇧🇷", lat: -22.9488, lng: -43.1568 },
-  { name: "Catedral de Notre-Dame", country: "França 🇫🇷", lat: 48.8530, lng: 2.3499 },
-  { name: "Torre de Pisa", country: "Itália 🇮🇹", lat: 43.7230, lng: 10.3966 },
-  { name: "Parlamento de Budapeste", country: "Hungria 🇭🇺", lat: 47.5072, lng: 19.0479 },
-  { name: "Museu do Louvre", country: "França 🇫🇷", lat: 48.8606, lng: 2.3376 },
-  { name: "Forbidden City", country: "China 🇨🇳", lat: 39.9163, lng: 116.3972 },
-  { name: "Uluru / Ayers Rock", country: "Austrália 🇦🇺", lat: -25.3444, lng: 131.0369 },
-  { name: "Times Square", country: "EUA 🇺🇸", lat: 40.7580, lng: -73.9855 },
-  { name: "Arco do Triunfo", country: "França 🇫🇷", lat: 48.8738, lng: 2.2950 },
-  { name: "Museu Guggenheim Bilbao", country: "Espanha 🇪🇸", lat: 43.2687, lng: -2.9340 },
-  { name: "Estádio de Wembley", country: "Reino Unido 🇬🇧", lat: 51.5560, lng: -0.2795 },
-  { name: "Ópera de Viena", country: "Áustria 🇦🇹", lat: 48.2030, lng: 16.3689 },
-  { name: "Ben Nevis", country: "Escócia 🇬🇧", lat: 56.7969, lng: -5.0035 },
-  { name: "Golden Gate", country: "EUA 🇺🇸", lat: 37.8199, lng: -122.4783 },
-  { name: "Mezquita de Córdoba", country: "Espanha 🇪🇸", lat: 37.8789, lng: -4.7794 },
+// ══════════════════════════════════════════════════
+//  50 LOCAIS — edite lat/lng para personalizar
+// ══════════════════════════════════════════════════
+const LOCATIONS=[
+  {name:"Torre Eiffel",country:"França 🇫🇷",lat:48.8584,lng:2.2945},
+  {name:"Coliseu",country:"Itália 🇮🇹",lat:41.8902,lng:12.4922},
+  {name:"Cristo Redentor",country:"Brasil 🇧🇷",lat:-22.9519,lng:-43.2105},
+  {name:"Machu Picchu",country:"Peru 🇵🇪",lat:-13.1631,lng:-72.545},
+  {name:"Sagrada Família",country:"Espanha 🇪🇸",lat:41.4036,lng:2.1744},
+  {name:"Big Ben",country:"Reino Unido 🇬🇧",lat:51.5007,lng:-0.1246},
+  {name:"Taj Mahal",country:"Índia 🇮🇳",lat:27.1751,lng:78.0421},
+  {name:"Burj Khalifa",country:"Emirados 🇦🇪",lat:25.1972,lng:55.2744},
+  {name:"Ópera de Sydney",country:"Austrália 🇦🇺",lat:-33.8568,lng:151.2153},
+  {name:"Grande Muralha",country:"China 🇨🇳",lat:40.4319,lng:116.5704},
+  {name:"Estátua da Liberdade",country:"EUA 🇺🇸",lat:40.6892,lng:-74.0445},
+  {name:"Kremlin",country:"Rússia 🇷🇺",lat:55.752,lng:37.6175},
+  {name:"Acrópole de Atenas",country:"Grécia 🇬🇷",lat:37.9715,lng:23.7267},
+  {name:"Pirâmides de Gizé",country:"Egito 🇪🇬",lat:29.9792,lng:31.1342},
+  {name:"Angkor Wat",country:"Camboja 🇰🇭",lat:13.4125,lng:103.867},
+  {name:"Chichén Itzá",country:"México 🇲🇽",lat:20.6843,lng:-88.5678},
+  {name:"Alhambra",country:"Espanha 🇪🇸",lat:37.1768,lng:-3.5887},
+  {name:"Ilha de Páscoa",country:"Chile 🇨🇱",lat:-27.1127,lng:-109.3497},
+  {name:"Stonehenge",country:"Reino Unido 🇬🇧",lat:51.1789,lng:-1.8262},
+  {name:"Monte Fuji",country:"Japão 🇯🇵",lat:35.3606,lng:138.7274},
+  {name:"Vaticano",country:"Vaticano 🇻🇦",lat:41.9022,lng:12.4533},
+  {name:"Palácio de Versalhes",country:"França 🇫🇷",lat:48.8049,lng:2.1204},
+  {name:"Cataratas do Iguaçu",country:"Brasil 🇧🇷",lat:-25.6953,lng:-54.4367},
+  {name:"Templo Esmeralda",country:"Tailândia 🇹🇭",lat:13.7467,lng:100.4927},
+  {name:"Canal de Veneza",country:"Itália 🇮🇹",lat:45.4408,lng:12.3155},
+  {name:"Santorini",country:"Grécia 🇬🇷",lat:36.3932,lng:25.4615},
+  {name:"Table Mountain",country:"África do Sul 🇿🇦",lat:-33.9628,lng:18.4098},
+  {name:"Catedral de São Basílio",country:"Rússia 🇷🇺",lat:55.7525,lng:37.6231},
+  {name:"Palácio de Buckingham",country:"Reino Unido 🇬🇧",lat:51.5014,lng:-0.1419},
+  {name:"Monte Rushmore",country:"EUA 🇺🇸",lat:43.8791,lng:-103.4591},
+  {name:"Cataratas do Niágara",country:"EUA/Canadá 🇺🇸",lat:43.0799,lng:-79.0747},
+  {name:"Hagia Sophia",country:"Turquia 🇹🇷",lat:41.0086,lng:28.9802},
+  {name:"Duomo de Florença",country:"Itália 🇮🇹",lat:43.7731,lng:11.256},
+  {name:"Petra",country:"Jordânia 🇯🇴",lat:30.3285,lng:35.4444},
+  {name:"Pão de Açúcar",country:"Brasil 🇧🇷",lat:-22.9488,lng:-43.1568},
+  {name:"Notre-Dame de Paris",country:"França 🇫🇷",lat:48.853,lng:2.3499},
+  {name:"Torre de Pisa",country:"Itália 🇮🇹",lat:43.723,lng:10.3966},
+  {name:"Parlamento de Budapeste",country:"Hungria 🇭🇺",lat:47.5072,lng:19.0479},
+  {name:"Museu do Louvre",country:"França 🇫🇷",lat:48.8606,lng:2.3376},
+  {name:"Cidade Proibida",country:"China 🇨🇳",lat:39.9163,lng:116.3972},
+  {name:"Uluru / Ayers Rock",country:"Austrália 🇦🇺",lat:-25.3444,lng:131.0369},
+  {name:"Times Square",country:"EUA 🇺🇸",lat:40.758,lng:-73.9855},
+  {name:"Arco do Triunfo",country:"França 🇫🇷",lat:48.8738,lng:2.295},
+  {name:"Guggenheim Bilbao",country:"Espanha 🇪🇸",lat:43.2687,lng:-2.934},
+  {name:"Ópera de Viena",country:"Áustria 🇦🇹",lat:48.203,lng:16.3689},
+  {name:"Golden Gate",country:"EUA 🇺🇸",lat:37.8199,lng:-122.4783},
+  {name:"Mezquita de Córdoba",country:"Espanha 🇪🇸",lat:37.8789,lng:-4.7794},
+  {name:"Castelo de Praga",country:"Rep. Checa 🇨🇿",lat:50.0909,lng:14.4},
+  {name:"Mont-Saint-Michel",country:"França 🇫🇷",lat:48.6361,lng:-1.5115},
+  {name:"Parlamento de Helsinki",country:"Finlândia 🇫🇮",lat:60.171,lng:24.933},
 ];
 
-// ════════════
-//  ESTADO
-// ════════════
-const NUM_GROUPS = 5;
-const NUM_ROUNDS = 5;
-const ROUND_TIME = 120; // segundos
+// ══════════════════════════════════════════════════
+//  ESTADO GLOBAL
+// ══════════════════════════════════════════════════
+let CFG = { numGroups:5, numRounds:5, roundTime:120, penaltyMult:0.5, hintRadiusKm:1000 };
+let groupData=[], groupLocations=[];
+let G=0, R=0;
 
-let groups = [];
-let selectedLocations = [];
-let currentRound = 0;
-let currentGroupIdx = 0;
-let timerInterval = null;
-let timeLeft = ROUND_TIME;
-let scores = []; // scores[groupIdx][roundIdx] = { distKm, guessLatLng }
-let groupGuesses = {}; // guesses do round atual: { groupIdx: { lat, lng } }
+let roundState = {
+  hintsUsed: 0,
+  penaltyFactor: 1,
+  guessLatLng: null
+};
 
-let miniMap = null;
-let guessMarker = null;
-let resultMapInstance = null;
-let audioCtx = null;
+let miniMap=null, guessMarker=null, hintCircle=null, resultMap=null;
+let timerInterval=null, timeLeft=0;
+let audioCtx=null, isPlayingMusic=false, musicTO=null;
 
-// ════════════
-//  SETUP UI
-// ════════════
-function buildSetupUI() {
-  const grid = document.getElementById('groups-grid');
-  grid.innerHTML = '';
-  for (let i = 0; i < NUM_GROUPS; i++) {
-    const wrap = document.createElement('div');
-    wrap.className = 'group-input-wrap';
-    wrap.innerHTML = `<label>Grupo ${i+1}</label>
-      <input type="text" id="g${i}" placeholder="Nome do grupo ${i+1}" maxlength="30">`;
-    grid.appendChild(wrap);
+// ── Setup UI dinâmico ──────────────────────────
+function selectPenalty(el){
+  document.querySelectorAll('.penalty-opt').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function buildGroupsUI(){
+  const n=parseInt(document.getElementById('cfg-groups').value);
+  const g=document.getElementById('groups-grid');
+  g.innerHTML='';
+  for(let i=0;i<n;i++){
+    const d=document.createElement('div');
+    d.className='group-input-wrap';
+    d.innerHTML=`<label>Grupo ${i+1}</label><input type="text" id="g${i}" placeholder="Nome do grupo ${i+1}" maxlength="30">`;
+    g.appendChild(d);
   }
 }
 
-function startGame() {
-  groups = [];
-  for (let i = 0; i < NUM_GROUPS; i++) {
-    const val = document.getElementById(`g${i}`).value.trim();
-    groups.push(val || `Grupo ${i+1}`);
+function startGame(){
+  CFG.numGroups = parseInt(document.getElementById('cfg-groups').value);
+  CFG.numRounds = parseInt(document.getElementById('cfg-rounds').value);
+  CFG.roundTime = parseInt(document.getElementById('cfg-time').value);
+  CFG.hintRadiusKm = parseInt(document.getElementById('cfg-radius').value);
+  const sel = document.querySelector('.penalty-opt.selected');
+  CFG.penaltyMult = sel ? parseFloat(sel.dataset.v) : 0.5;
+
+  groupData=[]; groupLocations=[];
+  for(let i=0;i<CFG.numGroups;i++){
+    const el=document.getElementById(`g${i}`);
+    const name=(el&&el.value.trim())||`Grupo ${i+1}`;
+    groupData.push({name, roundScores:[], hintsTotal:0});
+    groupLocations.push(shuffle([...LOCATIONS]).slice(0, CFG.numRounds));
   }
-  scores = groups.map(() => []);
-  selectedLocations = shuffle([...LOCATIONS]).slice(0, NUM_ROUNDS);
-  currentRound = 0;
-  currentGroupIdx = 0;
-  groupGuesses = {};
+  G=0; R=0;
+  document.getElementById('screen-setup').style.display='none';
+  showTransition();
+}
 
-  document.getElementById('screen-setup').style.display = 'none';
-  document.getElementById('screen-game').style.display = 'block';
-  document.getElementById('round-total').textContent = NUM_ROUNDS;
+// ── Tela de transição ─────────────────────────
+function showTransition(){
+  document.getElementById('tr-sub').textContent = G===0 ? 'Primeiro grupo:' : `Grupo ${G+1} de ${CFG.numGroups}:`;
+  document.getElementById('tr-name').textContent = groupData[G].name;
+  document.getElementById('tr-desc').textContent = `${CFG.numRounds} local${CFG.numRounds>1?'is':''} para identificar. Boa sorte!`;
+  document.getElementById('screen-transition').style.display='flex';
+  document.getElementById('screen-game').style.display='none';
+  document.getElementById('screen-partial').style.display='none';
+}
 
+function beginGroupPlay(){
+  R=0;
+  document.getElementById('screen-transition').style.display='none';
+  document.getElementById('screen-game').style.display='block';
+  document.getElementById('round-total').textContent=CFG.numRounds;
   initMiniMap();
   loadRound();
 }
 
-// ════════════
-//  MAPA (Leaflet)
-// ════════════
-function initMiniMap() {
-  if (miniMap) { miniMap.remove(); miniMap = null; }
-  miniMap = L.map('minimap', {
-    zoomControl: false, attributionControl: false,
-    doubleClickZoom: false
-  }).setView([20, 0], 2);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18
-  }).addTo(miniMap);
-  miniMap.on('click', onMapClick);
-  // expande no hover
-  const wrap = document.getElementById('minimap-wrap');
-  wrap.addEventListener('mouseenter', () => { wrap.classList.add('expanded'); setTimeout(() => miniMap.invalidateSize(), 310); });
-  wrap.addEventListener('mouseleave', () => { wrap.classList.remove('expanded'); setTimeout(() => miniMap.invalidateSize(), 310); });
+// ── Mapa ──────────────────────────────────────
+function initMiniMap(){
+  document.getElementById('minimap').innerHTML='';
+  if(miniMap){try{miniMap.remove();}catch(e){}miniMap=null;}
+  miniMap=L.map('minimap',{zoomControl:false,attributionControl:false,doubleClickZoom:false}).setView([20,0],2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(miniMap);
+  miniMap.on('click',onMapClick);
+  const wrap=document.getElementById('minimap-wrap');
+  wrap.onmouseenter=()=>setTimeout(()=>miniMap&&miniMap.invalidateSize(),310);
+  wrap.onmouseleave=()=>setTimeout(()=>miniMap&&miniMap.invalidateSize(),310);
 }
 
-function onMapClick(e) {
-  if (guessMarker) miniMap.removeLayer(guessMarker);
-  guessMarker = L.circleMarker(e.latlng, {
-    radius: 8, color: '#f5c842', fillColor: '#f5c842',
-    fillOpacity: 0.9, weight: 2
-  }).addTo(miniMap);
-  document.getElementById('confirm-btn').style.display = 'block';
-  document.getElementById('minimap-hint').style.opacity = '0';
+function onMapClick(e){
+  roundState.guessLatLng=e.latlng;
+  if(guessMarker)miniMap.removeLayer(guessMarker);
+  guessMarker=L.circleMarker(e.latlng,{radius:9,color:'#c8860a',fillColor:'#e8a020',fillOpacity:.85,weight:2}).addTo(miniMap);
+  document.getElementById('btn-confirm').style.display='inline-block';
+  document.getElementById('minimap-hint').style.opacity='0';
 }
 
-// ════════════
-//  ROUND
-// ════════════
-function loadRound() {
-  const loc = selectedLocations[currentRound];
-  document.getElementById('round-num').textContent = currentRound + 1;
-  groupGuesses = {};
-  currentGroupIdx = 0;
-  showGroupTurn();
-  loadStreetView(loc);
-  startTimer();
-}
-
-function showGroupTurn() {
-  document.getElementById('current-group-name').textContent = groups[currentGroupIdx];
-  // remove marcação anterior do mapa
-  if (guessMarker) { miniMap.removeLayer(guessMarker); guessMarker = null; }
-  document.getElementById('confirm-btn').style.display = 'none';
-  document.getElementById('minimap-hint').style.opacity = '1';
-}
-
-function loadStreetView(loc) {
-  const iframe = document.getElementById('sv-iframe');
-  // Google Street View Embed — sem necessidade de API key para uso básico
-  const url = `https://www.google.com/maps/embed/v1/streetview?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&location=${loc.lat},${loc.lng}&heading=0&pitch=0&fov=90`;
-  iframe.src = url;
-}
-
-function startTimer() {
-  clearInterval(timerInterval);
-  timeLeft = ROUND_TIME;
-  updateTimerDisplay();
-  startAmbientMusic();
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    updateTimerDisplay();
-    playTickSound(timeLeft);
-    if (timeLeft <= 0) {
-      clearInterval(timerInterval);
-      stopMusic();
-      showRoundResult();
-    }
-  }, 1000);
-}
-
-function updateTimerDisplay() {
-  const m = Math.floor(timeLeft / 60);
-  const s = timeLeft % 60;
-  const pill = document.getElementById('timer-pill');
-  pill.textContent = `${m}:${s.toString().padStart(2,'0')}`;
-  pill.classList.toggle('urgent', timeLeft <= 30);
-}
-
-function confirmGuess() {
-  if (!guessMarker) return;
-  const { lat, lng } = guessMarker.getLatLng();
-  groupGuesses[currentGroupIdx] = { lat, lng };
-
-  if (currentGroupIdx < NUM_GROUPS - 1) {
-    currentGroupIdx++;
-    showGroupTurn();
+// ── DICA ──────────────────────────────────────
+function syncHintButton(){
+  const btn=document.getElementById('btn-hint');
+  const rem = 2 - groupData[G].hintsTotal;
+  if(rem<=0){
+    btn.disabled=true;
+    btn.textContent='💡 Dicas esgotadas';
   } else {
-    // todos os grupos jogaram
-    clearInterval(timerInterval);
-    stopMusic();
-    showRoundResult();
+    btn.disabled=false;
+    const pctLoss=Math.round((1-CFG.penaltyMult)*100);
+    btn.textContent=`💡 Dica (−${pctLoss}%) — ${rem} restante${rem===1?'':'s'}`;
   }
 }
 
-// ════════════
-//  RESULTADO ROUND
-// ════════════
-function showRoundResult() {
-  const loc = selectedLocations[currentRound];
-  document.getElementById('res-location-name').textContent = loc.name;
-  document.getElementById('res-location-country').textContent = loc.country;
+function useHint(){
+  if(groupData[G].hintsTotal >= 2) return;
 
-  // calcula distâncias
-  const roundResults = groups.map((g, i) => {
-    const guess = groupGuesses[i];
-    if (!guess) return { group: g, idx: i, dist: null };
-    const dist = haversine(loc.lat, loc.lng, guess.lat, guess.lng);
-    scores[i].push(dist);
-    return { group: g, idx: i, dist, guess };
-  });
+  groupData[G].hintsTotal++;
+  roundState.hintsUsed++;
+  roundState.penaltyFactor*=CFG.penaltyMult;
 
-  // identifica vencedor do round
-  const validResults = roundResults.filter(r => r.dist !== null);
-  let minDist = validResults.length ? Math.min(...validResults.map(r => r.dist)) : null;
+  syncHintButton();
 
-  // mapa de resultado
-  const container = document.getElementById('result-map-mini');
-  container.innerHTML = '';
-  if (resultMapInstance) { resultMapInstance.remove(); resultMapInstance = null; }
-  resultMapInstance = L.map(container, { zoomControl: false, attributionControl: false })
-    .setView([loc.lat, loc.lng], 4);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(resultMapInstance);
+  const loc=groupLocations[G][R];
+  // Círculo com raio configurado (em km)
+  const radiusKm = CFG.hintRadiusKm;
+  const maxOffsetKm = radiusKm * 0.7;   // garante que o local real fique dentro do círculo
+  const angle=Math.random()*2*Math.PI;
+  const offsetKm=Math.random()*maxOffsetKm;
+  const dLat=(offsetKm/6371)*(180/Math.PI)*Math.sin(angle);
+  const dLng=(offsetKm/6371)*(180/Math.PI)/Math.cos(loc.lat*Math.PI/180)*Math.cos(angle);
+  const cLat=Math.max(-80,Math.min(80,loc.lat+dLat));
+  const cLng=loc.lng+dLng;
 
-  // marcador correto
-  L.marker([loc.lat, loc.lng], {
-    icon: L.divIcon({ html: '<div style="background:#22c55e;width:16px;height:16px;border-radius:50%;border:2px solid #fff"></div>', iconSize: [16,16], iconAnchor: [8,8] })
-  }).addTo(resultMapInstance).bindPopup(`✅ ${loc.name}`).openPopup();
-
-  // marcadores dos grupos
-  const colors = ['#f5c842','#60a5fa','#f87171','#a78bfa','#34d399'];
-  roundResults.forEach((r, i) => {
-    if (!r.guess) return;
-    L.polyline([[loc.lat, loc.lng], [r.guess.lat, r.guess.lng]], { color: colors[i], weight: 1.5, dashArray: '4 4' }).addTo(resultMapInstance);
-    L.circleMarker([r.guess.lat, r.guess.lng], { radius: 7, color: colors[i], fillColor: colors[i], fillOpacity: 0.8, weight: 2 })
-      .addTo(resultMapInstance).bindPopup(r.group);
-  });
-
-  // grid de resultados
-  const grid = document.getElementById('res-groups-grid');
-  grid.innerHTML = '';
-  roundResults.forEach((r, i) => {
-    const isWinner = r.dist !== null && r.dist === minDist;
-    const card = document.createElement('div');
-    card.className = 'result-group-card' + (isWinner ? ' winner' : '');
-    card.innerHTML = `<div class="result-group-name">${r.group}</div>
-      ${r.dist !== null
-        ? `<div class="result-group-dist">${formatDist(r.dist)}</div>
-           <div class="result-group-pts">${isWinner ? '🏆 Mais próximo!' : ''}</div>`
-        : `<div class="no-guess">Sem marcação</div>`}`;
-    grid.appendChild(card);
-  });
-
-  const isLast = currentRound >= NUM_ROUNDS - 1;
-  document.getElementById('btn-next').textContent = isLast ? '🏁 Ver resultado final' : 'Próximo local →';
-
-  document.getElementById('screen-result').style.display = 'flex';
-  setTimeout(() => resultMapInstance.invalidateSize(), 100);
+  if(hintCircle)miniMap.removeLayer(hintCircle);
+  hintCircle=L.circle([cLat,cLng],{
+    radius: radiusKm*1000,   // metros
+    color:'#1d6fa4',fillColor:'#1d6fa4',fillOpacity:.13,weight:2,dashArray:'6 4'
+  }).addTo(miniMap);
+  miniMap.fitBounds(hintCircle.getBounds(),{padding:[20,20]});
 }
 
-function nextRound() {
-  document.getElementById('screen-result').style.display = 'none';
-  currentRound++;
-  if (currentRound >= NUM_ROUNDS) {
-    showFinal();
+// ── Round ─────────────────────────────────────
+function loadRound(){
+  roundState = { hintsUsed:0, penaltyFactor:1, guessLatLng:null };
+
+  if(guessMarker){miniMap.removeLayer(guessMarker);guessMarker=null;}
+  if(hintCircle){miniMap.removeLayer(hintCircle);hintCircle=null;}
+  miniMap.setView([20,0],2);
+
+  document.getElementById('btn-confirm').style.display='none';
+  document.getElementById('minimap-hint').style.opacity='1';
+  document.getElementById('round-num').textContent=R+1;
+  document.getElementById('hud-group').textContent=groupData[G].name;
+  document.getElementById('hud-pts').textContent=
+    groupData[G].roundScores.reduce((a,b)=>a+b,0).toLocaleString('pt-BR');
+
+  syncHintButton();
+
+  const loc=groupLocations[G][R];
+  document.getElementById('sv-iframe').src=
+    `https://www.google.com/maps?q=${loc.lat},${loc.lng}&layer=c&cbll=${loc.lat},${loc.lng}&cbp=11,0,0,0,0&hl=pt-BR&output=svembed`;
+
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(timerInterval);
+  timeLeft=CFG.roundTime;
+  updateTimer();
+  startMusic();
+  timerInterval=setInterval(()=>{
+    timeLeft--;
+    updateTimer();
+    if(timeLeft<=30)tickSound(timeLeft);
+    if(timeLeft<=0){clearInterval(timerInterval);stopMusic();finishRound();}
+  },1000);
+}
+
+function updateTimer(){
+  const m=Math.floor(timeLeft/60),s=timeLeft%60;
+  const el=document.getElementById('timer-pill');
+  el.textContent=`${m}:${String(s).padStart(2,'0')}`;
+  el.className='hud-pill'+(timeLeft<=30?' urgent':timeLeft<=60?' warning':'');
+}
+
+function confirmGuess(){
+  if(!roundState.guessLatLng)return;
+  clearInterval(timerInterval);stopMusic();finishRound();
+}
+
+function finishRound(){
+  const loc=groupLocations[G][R];
+  let distKm=null,score=0;
+  if(roundState.guessLatLng){
+    distKm=haversine(loc.lat,loc.lng,roundState.guessLatLng.lat,roundState.guessLatLng.lng);
+    score=Math.round(Math.max(0,5000*(1-distKm/5000))*roundState.penaltyFactor);
+  }
+  groupData[G].roundScores.push(score);
+  showRoundResult(loc,distKm,score);
+}
+
+function showRoundResult(loc,distKm,score){
+  document.getElementById('screen-game').style.display='none';
+  document.getElementById('screen-result').style.display='flex';
+  document.getElementById('res-name').textContent=loc.name;
+  document.getElementById('res-country').textContent=loc.country;
+
+  const c=document.getElementById('result-map-mini');c.innerHTML='';
+  if(resultMap){try{resultMap.remove();}catch(e){}resultMap=null;}
+  const zoom=distKm&&distKm<100?8:distKm&&distKm<500?5:3;
+  resultMap=L.map(c,{zoomControl:false,attributionControl:false}).setView([loc.lat,loc.lng],zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(resultMap);
+  L.marker([loc.lat,loc.lng],{
+    icon:L.divIcon({html:'<div style="background:#0d7a5f;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>',iconSize:[14,14],iconAnchor:[7,7]})
+  }).addTo(resultMap).bindPopup(`✅ ${loc.name}`).openPopup();
+  if(roundState.guessLatLng){
+    L.circleMarker(roundState.guessLatLng,{radius:8,color:'#c8860a',fillColor:'#e8a020',fillOpacity:.9,weight:2}).addTo(resultMap).bindPopup('Sua marcação');
+    L.polyline([[loc.lat,loc.lng],[roundState.guessLatLng.lat,roundState.guessLatLng.lng]],{color:'#c8860a',weight:1.5,dashArray:'6 4'}).addTo(resultMap);
+  }
+
+  const gd=groupData[G];
+  const ptsCls=score>=3000?'good':score===0?'zero':'';
+  const penTag=roundState.penaltyFactor<1
+    ?`<span class="penalty-tag">×${roundState.penaltyFactor.toFixed(3).replace(/0+$/,'').replace(/\.$/,'')} dica</span>`:'';
+  document.getElementById('res-scores').innerHTML=`
+    <div class="res-row best">
+      <div>
+        <div class="res-label">${gd.name}</div>
+        <div class="res-dist">${distKm!==null?formatDist(distKm):'Sem marcação — 0 pts'}</div>
+      </div>
+      ${penTag}
+      <div class="res-pts ${ptsCls}">${score.toLocaleString('pt-BR')} pts</div>
+    </div>
+    <div style="margin-top:7px;font-size:12px;color:var(--muted);text-align:center">
+      Total: <strong>${gd.roundScores.reduce((a,b)=>a+b,0).toLocaleString('pt-BR')} pts</strong>
+      &nbsp;|&nbsp; Local ${R+1}/${CFG.numRounds}
+    </div>`;
+
+  const lastR=R>=CFG.numRounds-1, lastG=G>=CFG.numGroups-1;
+  document.getElementById('btn-next').textContent=
+    lastR&&lastG?'🏁 Ver resultado final':
+    lastR?'📊 Ver placar parcial →':
+    `Próximo local (${R+2}/${CFG.numRounds}) →`;
+
+  setTimeout(()=>resultMap&&resultMap.invalidateSize(),100);
+}
+
+function nextAfterResult(){
+  document.getElementById('screen-result').style.display='none';
+  const lastR=R>=CFG.numRounds-1, lastG=G>=CFG.numGroups-1;
+  if(lastR){
+    if(lastG)showFinal();
+    else showPartial();
   } else {
+    R++;
+    document.getElementById('screen-game').style.display='block';
     loadRound();
   }
 }
 
-// ════════════
-//  FINAL
-// ════════════
-function showFinal() {
-  document.getElementById('screen-game').style.display = 'none';
-
-  const totals = groups.map((g, i) => {
-    const total = scores[i].reduce((a, b) => a + b, 0);
-    return { group: g, total };
-  }).sort((a, b) => a.total - b.total);
-
-  const medals = ['🥇','🥈','🥉','4º','5º'];
-  const classes = ['gold','silver','bronze','',''];
-  const podium = document.getElementById('final-podium');
-  podium.innerHTML = totals.map((t, i) => `
-    <div class="podium-row ${classes[i]}">
-      <span class="podium-rank">${medals[i]}</span>
-      <span class="podium-name">${t.group}</span>
-      <div>
-        <div class="podium-total">${formatDist(t.total)}</div>
-        <div class="podium-unit">distância total</div>
-      </div>
+function showPartial(){
+  document.getElementById('screen-partial').style.display='flex';
+  const next=groupData[G+1].name;
+  document.getElementById('partial-desc').textContent=`${groupData[G].name} concluiu! Próximo: ${next}`;
+  const ranked=groupData.map(g=>({name:g.name,total:g.roundScores.reduce((a,b)=>a+b,0),done:g.roundScores.length>=CFG.numRounds}))
+    .sort((a,b)=>b.total-a.total);
+  const medals=['🥇','🥈','🥉','4º','5º','6º','7º','8º','9º','10º'];
+  document.getElementById('partial-board').innerHTML=ranked.map((r,i)=>`
+    <div class="score-row ${i===0?'leader':''}">
+      <span class="score-rank">${medals[i]}</span>
+      <div><div class="score-name">${r.name}</div><div class="score-status">${r.done?'Concluído':'Aguardando…'}</div></div>
+      <div class="score-pts-big ${r.done?'done':''}">${r.total.toLocaleString('pt-BR')}</div>
     </div>`).join('');
-
-  document.getElementById('screen-final').style.display = 'flex';
+  document.getElementById('btn-partial-next').textContent=`▶ Vez do ${next}`;
 }
 
-function restartGame() {
-  document.getElementById('screen-final').style.display = 'none';
-  document.getElementById('screen-setup').style.display = 'flex';
+function nextGroup(){
+  document.getElementById('screen-partial').style.display='none';
+  G++; R=0;
+  showTransition();
 }
 
-// ════════════
-//  ÁUDIO (Web Audio API)
-// ════════════
-let gainNode = null;
-let musicOscillators = [];
-let isPlaying = false;
-
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  return audioCtx;
+function showFinal(){
+  document.getElementById('screen-final').style.display='flex';
+  const ranked=groupData.map(g=>({name:g.name,total:g.roundScores.reduce((a,b)=>a+b,0),rounds:g.roundScores}))
+    .sort((a,b)=>b.total-a.total);
+  const medals=['🥇','🥈','🥉','4º','5º','6º','7º','8º','9º','10º'],cls=['leader','','','','','','','','',''];
+  document.getElementById('final-board').innerHTML=ranked.map((r,i)=>`
+    <div class="score-row ${cls[i]}">
+      <span class="score-rank">${medals[i]}</span>
+      <div><div class="score-name">${r.name}</div>
+        <div class="score-status">${r.rounds.map(s=>s.toLocaleString('pt-BR')).join(' + ')} = ${r.total.toLocaleString('pt-BR')} pts</div>
+      </div>
+      <div class="score-pts-big done">${r.total.toLocaleString('pt-BR')}</div>
+    </div>`).join('');
 }
 
-function startAmbientMusic() {
-  stopMusic();
-  isPlaying = true;
-  const ctx = getAudioCtx();
-  gainNode = ctx.createGain();
-  gainNode.gain.setValueAtTime(0.04, ctx.currentTime);
-  gainNode.connect(ctx.destination);
-
-  // música de contagem: arpejo minimalista
-  const notes = [261.63, 329.63, 392.00, 523.25]; // C4 E4 G4 C5
-  let step = 0;
-  function playStep() {
-    if (!isPlaying) return;
-    const osc = ctx.createOscillator();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(notes[step % notes.length], ctx.currentTime);
-    osc.connect(gainNode);
-    osc.start();
-    osc.stop(ctx.currentTime + 0.15);
-    step++;
-    setTimeout(playStep, 600);
+// ── Áudio ─────────────────────────────────────
+function getCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function startMusic(){
+  isPlayingMusic=true;
+  const ctx=getCtx(),notes=[261.63,329.63,392,440,523.25];let step=0;
+  function play(){
+    if(!isPlayingMusic)return;
+    const osc=ctx.createOscillator(),g=ctx.createGain();
+    osc.connect(g);g.connect(ctx.destination);
+    osc.type='sine';osc.frequency.value=notes[step%notes.length];
+    g.gain.setValueAtTime(0.04,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.18);
+    osc.start();osc.stop(ctx.currentTime+0.18);step++;
+    musicTO=setTimeout(play,timeLeft<=30?270:650);
   }
-  playStep();
+  play();
+}
+function stopMusic(){isPlayingMusic=false;clearTimeout(musicTO);}
+function tickSound(t){
+  const ctx=getCtx(),osc=ctx.createOscillator(),g=ctx.createGain();
+  osc.connect(g);g.connect(ctx.destination);osc.type='square';
+  osc.frequency.value=t<=10?880:660;
+  g.gain.setValueAtTime(0.05,ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.07);
+  osc.start();osc.stop(ctx.currentTime+0.07);
 }
 
-function stopMusic() {
-  isPlaying = false;
-  if (gainNode) {
-    try { gainNode.gain.setValueAtTime(0, getAudioCtx().currentTime); } catch(e){}
-    gainNode = null;
-  }
+// ── Utilitários ───────────────────────────────
+function haversine(a,b,c,d){
+  const R=6371,dL=(c-a)*Math.PI/180,dG=(d-b)*Math.PI/180;
+  const x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dG/2)**2;
+  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
 }
+function formatDist(km){return km<1?`${Math.round(km*1000)} m`:`${Math.round(km).toLocaleString('pt-BR')} km`;}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
-function playTickSound(t) {
-  if (t > 30) return;
-  const ctx = getAudioCtx();
-  const osc = ctx.createOscillator();
-  const g = ctx.createGain();
-  osc.connect(g); g.connect(ctx.destination);
-  osc.type = 'square';
-  osc.frequency.setValueAtTime(t <= 10 ? 880 : 660, ctx.currentTime);
-  g.gain.setValueAtTime(0.05, ctx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-  osc.start(); osc.stop(ctx.currentTime + 0.08);
-}
-
-// ════════════
-//  UTILITÁRIOS
-// ════════════
-function haversine(lat1, lng1, lat2, lng2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-}
-
-function formatDist(km) {
-  if (km < 1) return `${Math.round(km * 1000)} m`;
-  return `${Math.round(km).toLocaleString('pt-BR')} km`;
-}
-
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i+1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
-
-// ════════════
-//  INIT
-// ════════════
-buildSetupUI();
+// ── Init ──────────────────────────────────────
+buildGroupsUI();
 </script>
 </body>
 </html>
