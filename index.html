@@ -292,11 +292,11 @@ const MAPTILER_KEY = 'OirAeys66HpijFsXiu8s'; // ← coloque sua chave aqui
 
 // URL do tile: se a chave estiver definida, usa MapTiler com labels em pt;
 // caso contrário, mantém o OpenStreetMap padrão (nomes locais).
-const TILE_URL = MAPTILER_KEY && MAPTILER_KEY !== 'SUA_CHAVE_MAPTILER'
+const TILE_URL = MAPTILER_KEY && MAPTILER_KEY !== 'OirAeys66HpijFsXiu8s'
   ? `https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${MAPTILER_KEY}&lang=pt`
   : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
-const TILE_OPTIONS = MAPTILER_KEY && MAPTILER_KEY !== 'SUA_CHAVE_MAPTILER'
+const TILE_OPTIONS = MAPTILER_KEY && MAPTILER_KEY !== 'OirAeys66HpijFsXiu8s'
   ? { maxZoom: 18, tileSize: 512, zoomOffset: -1 }
   : { maxZoom: 18 };
 
