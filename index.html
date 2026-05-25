@@ -12,49 +12,82 @@
   --gold:#c8860a;--gold-light:#fef3dc;--gold-btn:#e8a020;
   --teal:#0d7a5f;--red:#c0392b;--red-light:#fdecea;
   --text:#1a1a1a;--muted:#6b7280;--hint:#1d6fa4;
+  --blue:#1d6fa4;--blue-light:#e8f4fd;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min-height:100vh;overflow:hidden;}
 
 /* ── SETUP ── */
-#screen-setup{display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:2rem 1rem;gap:1.25rem;overflow-y:auto;justify-content:flex-start;padding-top:2.5rem;}
-.logo h1{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:var(--gold);text-align:center;letter-spacing:-.02em;}
+#screen-setup{
+  display:flex;flex-direction:column;align-items:center;min-height:100vh;
+  padding:2rem 1rem;gap:1.25rem;overflow-y:auto;justify-content:flex-start;padding-top:2.5rem;
+  background:#fff;
+}
+.logo h1{
+  font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:var(--blue);
+  text-align:center;letter-spacing:-.02em;
+}
 .logo p{color:var(--muted);text-align:center;margin-top:4px;font-size:.95rem;}
 .globe{font-size:2.5rem;text-align:center;}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem 1.5rem;width:100%;max-width:640px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
-.card h2{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem;}
+.card{
+  background:var(--surface);border:1px solid #d1d5db;border-radius:16px;
+  padding:1.25rem 1.5rem;width:100%;max-width:640px;
+  box-shadow:0 2px 12px rgba(0,0,0,.04);
+}
+.card h2{
+  font-size:.7rem;color:var(--blue);text-transform:uppercase;letter-spacing:.1em;
+  margin-bottom:.9rem;font-weight:600;
+}
 
 .cfg-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:.5rem;}
 .cfg-item{display:flex;flex-direction:column;gap:4px;}
 .cfg-item label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
 .cfg-item select,.cfg-item input[type=number]{
-  background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;
-  padding:8px 10px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s;
-  -webkit-appearance:none;appearance:none;cursor:pointer;
+  background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:8px;
+  padding:8px 10px;color:var(--text);font-size:14px;outline:none;
+  transition:border-color .2s;-webkit-appearance:none;appearance:none;cursor:pointer;
 }
-.cfg-item select:focus,.cfg-item input[type=number]:focus{border-color:var(--gold);}
+.cfg-item select:focus,.cfg-item input[type=number]:focus{border-color:var(--blue);}
 
 .groups-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
 .group-input-wrap{display:flex;flex-direction:column;gap:3px;}
 .group-input-wrap label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
-.group-input-wrap input{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s;}
-.group-input-wrap input:focus{border-color:var(--gold);}
+.group-input-wrap input{
+  background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:8px;
+  padding:8px 11px;color:var(--text);font-size:13px;outline:none;
+  transition:border-color .2s;
+}
+.group-input-wrap input:focus{border-color:var(--blue);}
 .group-input-wrap input::placeholder{color:#bbb;}
 
 .penalty-opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
-.penalty-opt{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;transition:all .15s;user-select:none;}
-.penalty-opt:hover{border-color:var(--hint);}
-.penalty-opt.selected{background:#dbeeff;border-color:var(--hint);color:var(--hint);font-weight:700;}
+.penalty-opt{
+  background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:8px;
+  padding:6px 12px;font-size:13px;cursor:pointer;transition:all .15s;user-select:none;
+}
+.penalty-opt:hover{border-color:var(--blue);}
+.penalty-opt.selected{background:var(--blue-light);border-color:var(--blue);color:var(--blue);font-weight:700;}
 
-.btn-primary{background:var(--gold-btn);color:#fff;border:none;border-radius:10px;padding:13px 48px;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(200,130,10,.25);align-self:center;}
+.btn-primary{
+  background:var(--teal);color:#fff;border:none;border-radius:10px;
+  padding:13px 48px;font-size:1rem;font-weight:700;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 16px rgba(13,122,95,.25);align-self:center;
+}
 .btn-primary:hover{opacity:.9;transform:translateY(-1px);}
 
 /* ── TRANSIÇÃO ── */
-#screen-transition{display:none;position:fixed;inset:0;background:var(--bg);z-index:400;flex-direction:column;align-items:center;justify-content:center;gap:1.25rem;}
+#screen-transition{
+  display:none;position:fixed;inset:0;background:var(--bg);
+  z-index:400;flex-direction:column;align-items:center;justify-content:center;gap:1.25rem;
+}
 #screen-transition h2{font-size:1rem;color:var(--muted);}
 #screen-transition h1{font-size:2.4rem;font-weight:800;color:var(--gold);}
 #screen-transition p{color:var(--muted);font-size:.95rem;}
-.btn-go{background:var(--teal);color:#fff;border:none;border-radius:10px;padding:13px 48px;font-size:1.05rem;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(13,122,95,.25);}
+.btn-go{
+  background:var(--teal);color:#fff;border:none;border-radius:10px;
+  padding:13px 48px;font-size:1.05rem;font-weight:700;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 16px rgba(13,122,95,.25);
+}
 .btn-go:hover{opacity:.9;transform:translateY(-1px);}
 
 /* ── JOGO ── */
@@ -69,52 +102,118 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
   backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.15);
 }
 
-#hud-top{position:absolute;top:0;left:0;right:0;padding:10px 14px;display:flex;align-items:center;gap:8px;background:linear-gradient(to bottom,rgba(255,255,255,.93) 0%,transparent 100%);pointer-events:none;}
-.hud-pill{background:rgba(255,255,255,.93);border:1px solid rgba(0,0,0,.11);border-radius:20px;padding:5px 13px;font-size:13px;color:var(--text);backdrop-filter:blur(4px);pointer-events:auto;white-space:nowrap;}
+/* NOVA FAIXA SÓLIDA */
+#hud-top{
+  position:absolute;top:0;left:0;right:0;padding:12px 14px;
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,0.95);
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid rgba(0,0,0,.1);
+  pointer-events:none;
+}
+.hud-pill{
+  background:rgba(0,0,0,.04);border:1px solid rgba(0,0,0,.12);border-radius:20px;
+  padding:6px 14px;font-size:14px;color:var(--text);
+  pointer-events:auto;white-space:nowrap;font-weight:500;
+}
 .hud-pill strong{color:var(--gold);}
-#timer-pill{font-size:19px;font-weight:800;min-width:68px;text-align:center;font-variant-numeric:tabular-nums;}
+#timer-pill{
+  font-size:20px;font-weight:800;min-width:70px;text-align:center;
+  font-variant-numeric:tabular-nums;background:var(--gold-light);border-color:var(--gold);
+}
 #timer-pill.urgent{color:var(--red);}
 #timer-pill.warning{color:#d97706;}
 
 /* minimapa */
-#minimap-wrap{position:absolute;bottom:68px;right:14px;width:195px;height:148px;border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,.85);box-shadow:0 4px 20px rgba(0,0,0,.3);transition:width .3s,height .3s;cursor:crosshair;z-index:100;}
+#minimap-wrap{
+  position:absolute;bottom:68px;right:14px;width:195px;height:148px;
+  border-radius:12px;overflow:hidden;border:2px solid rgba(255,255,255,.85);
+  box-shadow:0 4px 20px rgba(0,0,0,.3);transition:width .3s,height .3s;
+  cursor:crosshair;z-index:100;
+}
 #minimap-wrap:hover{width:370px;height:290px;}
 #minimap{width:100%;height:100%;}
 
-/* action bar */
-#action-bar{position:absolute;bottom:14px;right:14px;display:flex;gap:8px;z-index:101;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
-#btn-hint{background:var(--hint);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 3px 10px rgba(29,111,164,.4);white-space:nowrap;}
+#action-bar{
+  position:absolute;bottom:14px;right:14px;display:flex;gap:8px;
+  z-index:101;align-items:center;flex-wrap:wrap;justify-content:flex-end;
+}
+#btn-hint{
+  background:var(--hint);color:#fff;border:none;border-radius:10px;
+  padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .2s;box-shadow:0 3px 10px rgba(29,111,164,.4);white-space:nowrap;
+}
 #btn-hint:hover:not(:disabled){opacity:.85;}
 #btn-hint:disabled{opacity:.38;cursor:not-allowed;background:#94a3b8;}
-#btn-confirm{background:var(--gold-btn);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 3px 14px rgba(200,130,10,.4);display:none;}
+#btn-confirm{
+  background:var(--gold-btn);color:#fff;border:none;border-radius:10px;
+  padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;
+  transition:all .2s;box-shadow:0 3px 14px rgba(200,130,10,.4);display:none;
+}
 #btn-confirm:hover{opacity:.9;transform:scale(1.02);}
-#btn-reload{background:#555;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:none;}
+#btn-reload{
+  background:#475569;color:#fff;border:none;border-radius:10px;
+  padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .2s;display:none;
+}
 #btn-reload:hover{opacity:.85;}
 
-#minimap-hint{position:absolute;bottom:224px;right:14px;background:rgba(255,255,255,.92);color:var(--muted);font-size:11px;padding:4px 11px;border-radius:20px;pointer-events:none;z-index:101;white-space:nowrap;border:1px solid var(--border);transition:opacity .3s;}
+#minimap-hint{
+  position:absolute;bottom:224px;right:14px;background:rgba(255,255,255,.92);
+  color:var(--muted);font-size:11px;padding:4px 11px;border-radius:20px;
+  pointer-events:none;z-index:101;white-space:nowrap;
+  border:1px solid var(--border);transition:opacity .3s;
+}
 
 /* ── RESULTADO ── */
-#screen-result{display:none;position:fixed;inset:0;background:rgba(245,244,240,.92);backdrop-filter:blur(6px);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:1rem;}
-.result-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:1.6rem;width:min(520px,96vw);box-shadow:0 8px 40px rgba(0,0,0,.12);overflow-y:auto;max-height:96vh;}
+#screen-result{
+  display:none;position:fixed;inset:0;background:rgba(245,244,240,.92);
+  backdrop-filter:blur(6px);z-index:200;flex-direction:column;
+  align-items:center;justify-content:center;padding:1rem;
+}
+.result-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:20px;
+  padding:1.6rem;width:min(520px,96vw);box-shadow:0 8px 40px rgba(0,0,0,.12);
+  overflow-y:auto;max-height:96vh;
+}
 .result-card h2{font-size:1.35rem;font-weight:800;color:var(--gold);margin-bottom:2px;}
 .result-card p.sub{color:var(--muted);font-size:.88rem;margin-bottom:.9rem;}
 #result-map-mini{height:195px;border-radius:12px;margin-bottom:.9rem;overflow:hidden;border:1px solid var(--border);}
-.res-row{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;border-radius:10px;margin-bottom:5px;background:var(--surface2);border:1px solid var(--border);}
+.res-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 13px;border-radius:10px;margin-bottom:5px;
+  background:var(--surface2);border:1px solid var(--border);
+}
 .res-row.best{border-color:var(--gold);background:var(--gold-light);}
 .res-label{font-weight:600;font-size:.88rem;}
 .res-dist{font-size:.82rem;color:var(--muted);}
 .res-pts{font-size:1.05rem;font-weight:800;color:var(--gold);min-width:88px;text-align:right;}
 .res-pts.zero{color:var(--red);}
 .res-pts.good{color:var(--teal);}
-.penalty-tag{font-size:10px;color:var(--red);background:var(--red-light);padding:2px 7px;border-radius:10px;margin-left:5px;}
-.btn-next{width:100%;background:var(--teal);color:#fff;border:none;border-radius:10px;padding:12px;font-size:.95rem;font-weight:700;cursor:pointer;margin-top:.9rem;transition:all .2s;}
+.penalty-tag{
+  font-size:10px;color:var(--red);background:var(--red-light);
+  padding:2px 7px;border-radius:10px;margin-left:5px;
+}
+.btn-next{
+  width:100%;background:var(--teal);color:#fff;border:none;
+  border-radius:10px;padding:12px;font-size:.95rem;font-weight:700;
+  cursor:pointer;margin-top:.9rem;transition:all .2s;
+}
 .btn-next:hover{opacity:.9;}
 
 /* ── PLACAR PARCIAL ── */
-#screen-partial{display:none;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:1.25rem;}
+#screen-partial{
+  display:none;position:fixed;inset:0;background:var(--bg);
+  z-index:300;flex-direction:column;align-items:center;
+  justify-content:center;padding:2rem;gap:1.25rem;
+}
 #screen-partial h1{font-size:1.9rem;font-weight:800;text-align:center;}
 .scoreboard{width:min(500px,90vw);display:flex;flex-direction:column;gap:8px;}
-.score-row{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:12px 18px;display:flex;align-items:center;gap:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);}
+.score-row{
+  background:var(--surface);border:1px solid var(--border);border-radius:13px;
+  padding:12px 18px;display:flex;align-items:center;gap:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
 .score-row.leader{border-color:var(--gold);background:var(--gold-light);}
 .score-rank{font-size:1.3rem;min-width:26px;}
 .score-name{flex:1;font-weight:700;font-size:.95rem;}
@@ -123,9 +222,17 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
 .score-status{font-size:11px;color:var(--muted);}
 
 /* ── FINAL ── */
-#screen-final{display:none;position:fixed;inset:0;background:var(--bg);z-index:300;flex-direction:column;align-items:center;justify-content:center;padding:2rem;gap:1.25rem;overflow-y:auto;}
+#screen-final{
+  display:none;position:fixed;inset:0;background:var(--bg);
+  z-index:300;flex-direction:column;align-items:center;
+  justify-content:center;padding:2rem;gap:1.25rem;overflow-y:auto;
+}
 #screen-final h1{font-size:2.3rem;font-weight:800;color:var(--gold);text-align:center;}
-.btn-restart{background:transparent;border:2px solid var(--gold);color:var(--gold);border-radius:10px;padding:11px 34px;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-restart{
+  background:transparent;border:2px solid var(--gold);color:var(--gold);
+  border-radius:10px;padding:11px 34px;font-size:.95rem;font-weight:700;
+  cursor:pointer;transition:all .2s;
+}
 .btn-restart:hover{background:var(--gold-light);}
 </style>
 </head>
@@ -144,7 +251,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
     <div class="cfg-row">
       <div class="cfg-item">
         <label>Nº de Grupos</label>
-        <select id="cfg-groups" onchange="buildGroupsUI()">
+        <select id="cfg-groups" onchange="buildGroupsUI(); updateHintOptions()">
           <option value="1">1 grupo</option>
           <option value="2">2 grupos</option>
           <option value="3">3 grupos</option>
@@ -159,7 +266,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
       </div>
       <div class="cfg-item">
         <label>Locais por grupo</label>
-        <select id="cfg-rounds">
+        <select id="cfg-rounds" onchange="updateHintOptions()">
           <option value="1">1 local</option>
           <option value="2">2 locais</option>
           <option value="3">3 locais</option>
@@ -194,6 +301,22 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
           <option value="2500">2500 km</option>
         </select>
       </div>
+      <div class="cfg-item">
+        <label>Dicas por grupo</label>
+        <select id="cfg-maxhints">
+          <option value="0">0 dicas</option>
+          <option value="1">1 dica</option>
+          <option value="2" selected>2 dicas</option>
+          <option value="3">3 dicas</option>
+          <option value="4">4 dicas</option>
+          <option value="5">5 dicas</option>
+          <option value="6">6 dicas</option>
+          <option value="7">7 dicas</option>
+          <option value="8">8 dicas</option>
+          <option value="9">9 dicas</option>
+          <option value="10">10 dicas</option>
+        </select>
+      </div>
     </div>
 
     <div style="margin-top:.75rem;">
@@ -210,7 +333,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
         <div class="penalty-opt" data-v="0.2" onclick="selectPenalty(this)">−80%</div>
         <div class="penalty-opt" data-v="0.1" onclick="selectPenalty(this)">−90%</div>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-top:6px;">Aplicado por dica usada. Máx. 2 dicas por grupo.</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px;">Aplicado por dica usada.</div>
     </div>
   </div>
 
@@ -281,24 +404,12 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
 
 <script>
 // ══════════════════════════════════════════════════
-//  CONFIGURAÇÃO DO MAPA EM PORTUGUÊS
+//  MAPA EM PORTUGUÊS (MapTiler)
 // ══════════════════════════════════════════════════
-// Para exibir nomes de países e cidades em português, use o MapTiler (grátis).
-// 1. Crie uma conta em https://cloud.maptiler.com
-// 2. Obtenha sua chave de API gratuita
-// 3. Substitua 'SUA_CHAVE_MAPTILER' abaixo pela sua chave
-// 4. O mapa usará automaticamente os nomes em português (lang=pt)
-const MAPTILER_KEY = 'OirAeys66HpijFsXiu8s'; // ← coloque sua chave aqui
+const MAPTILER_KEY = 'OirAeys66HpijFsXiu8s';  // sua chave
 
-// URL do tile: se a chave estiver definida, usa MapTiler com labels em pt;
-// caso contrário, mantém o OpenStreetMap padrão (nomes locais).
-const TILE_URL = MAPTILER_KEY && MAPTILER_KEY !== 'OirAeys66HpijFsXiu8s'
-  ? `https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${MAPTILER_KEY}&lang=pt`
-  : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-
-const TILE_OPTIONS = MAPTILER_KEY && MAPTILER_KEY !== 'OirAeys66HpijFsXiu8s'
-  ? { maxZoom: 18, tileSize: 512, zoomOffset: -1 }
-  : { maxZoom: 18 };
+const TILE_URL = `https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${MAPTILER_KEY}&lang=pt`;
+const TILE_OPTIONS = { maxZoom: 18, tileSize: 512, zoomOffset: -1 };
 
 // ══════════════════════════════════════════════════
 //  50 LOCAIS — edite lat/lng para personalizar
@@ -359,7 +470,7 @@ const LOCATIONS=[
 // ══════════════════════════════════════════════════
 //  ESTADO GLOBAL
 // ══════════════════════════════════════════════════
-let CFG = { numGroups:5, numRounds:5, roundTime:120, penaltyMult:0.5, hintRadiusKm:1000 };
+let CFG = { numGroups:5, numRounds:5, roundTime:120, penaltyMult:0.5, hintRadiusKm:1000, maxHints:2 };
 let groupData=[], groupLocations=[];
 let G=0, R=0;
 
@@ -372,12 +483,26 @@ let roundState = {
 let miniMap=null, guessMarker=null, hintCircle=null, resultMap=null;
 let timerInterval=null, timeLeft=0;
 let audioCtx=null, isPlayingMusic=false, musicTO=null;
-let reloadTimeout = null;  // para mostrar botão de recarregar
+let reloadTimeout = null;
 
 // ── Setup UI dinâmico ──────────────────────────
 function selectPenalty(el){
   document.querySelectorAll('.penalty-opt').forEach(e=>e.classList.remove('selected'));
   el.classList.add('selected');
+}
+
+function updateHintOptions(){
+  const rounds = parseInt(document.getElementById('cfg-rounds').value);
+  const sel = document.getElementById('cfg-maxhints');
+  const currentVal = parseInt(sel.value);
+  sel.innerHTML = '';
+  for(let i=0; i<=rounds; i++){
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = i === 1 ? '1 dica' : `${i} dicas`;
+    if(i === Math.min(currentVal, rounds)) opt.selected = true;
+    sel.appendChild(opt);
+  }
 }
 
 function buildGroupsUI(){
@@ -397,6 +522,7 @@ function startGame(){
   CFG.numRounds = parseInt(document.getElementById('cfg-rounds').value);
   CFG.roundTime = parseInt(document.getElementById('cfg-time').value);
   CFG.hintRadiusKm = parseInt(document.getElementById('cfg-radius').value);
+  CFG.maxHints = parseInt(document.getElementById('cfg-maxhints').value);
   const sel = document.querySelector('.penalty-opt.selected');
   CFG.penaltyMult = sel ? parseFloat(sel.dataset.v) : 0.5;
 
@@ -428,13 +554,11 @@ function beginGroupPlay(){
   document.getElementById('screen-game').style.display='block';
   document.getElementById('round-total').textContent=CFG.numRounds;
   
-  // Aguarda o DOM ser renderizado com as novas dimensões antes de criar o minimapa
   setTimeout(() => {
     initMiniMap();
     loadRound();
   }, 300);
   
-  // Garante que o minimapa se ajuste em mudanças de orientação ou zoom no celular
   window.addEventListener('resize', () => {
     if(miniMap) setTimeout(() => miniMap.invalidateSize(), 100);
   });
@@ -457,7 +581,6 @@ function initMiniMap(){
   
   miniMap.on('click', onMapClick);
   
-  // Garante que o mapa preencha completamente o container (importante no mobile)
   setTimeout(() => {
     if(miniMap) miniMap.invalidateSize();
   }, 200);
@@ -465,7 +588,7 @@ function initMiniMap(){
   const wrap=document.getElementById('minimap-wrap');
   wrap.onmouseenter=()=>setTimeout(()=>miniMap&&miniMap.invalidateSize(),310);
   wrap.onmouseleave=()=>setTimeout(()=>miniMap&&miniMap.invalidateSize(),310);
-  wrap.ontouchstart=()=>setTimeout(()=>miniMap&&miniMap.invalidateSize(),310); // mobile
+  wrap.ontouchstart=()=>setTimeout(()=>miniMap&&miniMap.invalidateSize(),310);
 }
 
 function onMapClick(e){
@@ -479,8 +602,10 @@ function onMapClick(e){
 // ── DICA ──────────────────────────────────────
 function syncHintButton(){
   const btn=document.getElementById('btn-hint');
-  const rem = 2 - groupData[G].hintsTotal;
-  if(rem<=0){
+  const max = CFG.maxHints;
+  const used = groupData[G].hintsTotal;
+  const rem = max - used;
+  if(rem <= 0){
     btn.disabled=true;
     btn.textContent='💡 Dicas esgotadas';
   } else {
@@ -491,7 +616,7 @@ function syncHintButton(){
 }
 
 function useHint(){
-  if(groupData[G].hintsTotal >= 2) return;
+  if(groupData[G].hintsTotal >= CFG.maxHints) return;
 
   groupData[G].hintsTotal++;
   roundState.hintsUsed++;
@@ -517,14 +642,21 @@ function useHint(){
   miniMap.fitBounds(hintCircle.getBounds(),{padding:[20,20]});
 }
 
-// ── Street View recarregar ────────────────────
+// ── Street View recarregar (com reset do timer) ──
 function reloadStreetView(){
   const iframe = document.getElementById('sv-iframe');
   const loading = document.getElementById('sv-loading');
   if(loading) loading.style.display = 'block';
   document.getElementById('btn-reload').style.display = 'none';
-  iframe.src = iframe.src; // força recarregamento
-  // reinicia a lógica de hideLoading
+  
+  // Reseta o timer
+  stopMusic();
+  clearInterval(timerInterval);
+  timeLeft = CFG.roundTime;
+  updateTimer();
+  
+  iframe.src = iframe.src;  // força recarregamento
+  
   let loaded = false;
   const hideLoading = () => { 
     if(!loaded) { 
@@ -532,11 +664,12 @@ function reloadStreetView(){
       if(loading) loading.style.display = 'none'; 
       document.getElementById('btn-reload').style.display = 'none';
       if(reloadTimeout) clearTimeout(reloadTimeout);
+      // Reinicia o timer quando a imagem aparecer
+      startTimer();
     } 
   };
   iframe.onload = () => setTimeout(hideLoading, 500);
   reloadTimeout = setTimeout(() => {
-    // se após 4s o loading ainda está visível, mostra botão de recarregar
     if(loading && loading.style.display !== 'none'){
       document.getElementById('btn-reload').style.display = 'inline-block';
     }
@@ -545,7 +678,6 @@ function reloadStreetView(){
 
 // ── Pré‑carregamento do próximo local ─────────
 function preloadNextRound(){
-  // Pré‑carrega o Street View do próximo local do grupo atual
   if(R+1 < CFG.numRounds){
     const nextLoc = groupLocations[G][R+1];
     const prefetch = document.getElementById('sv-prefetch');
@@ -579,7 +711,6 @@ function loadRound(){
   const loading = document.getElementById('sv-loading');
   const btnReload = document.getElementById('btn-reload');
   
-  // Mostra indicador de carregamento e esconde botão de recarregar
   if(loading) loading.style.display = 'block';
   btnReload.style.display = 'none';
   
@@ -597,14 +728,12 @@ function loadRound(){
   
   iframe.onload = () => setTimeout(hideLoading, 500);
   
-  // Se após 5s o loading ainda estiver visível, mostra botão de recarregar
   reloadTimeout = setTimeout(() => {
     if(loading && loading.style.display !== 'none'){
       btnReload.style.display = 'inline-block';
     }
   }, 5000);
   
-  // Inicia o pré‑carregamento do próximo local em segundo plano
   setTimeout(preloadNextRound, 1000);
   
   startTimer();
@@ -780,6 +909,7 @@ function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random
 
 // ── Init ──────────────────────────────────────
 buildGroupsUI();
+updateHintOptions();
 </script>
 </body>
 </html>
