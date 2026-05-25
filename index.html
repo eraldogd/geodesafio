@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>GeoDesafio — Onde no Mundo?</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -24,7 +24,6 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.25rem 1.5rem;width:100%;max-width:640px;box-shadow:0 2px 12px rgba(0,0,0,.06);}
 .card h2{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.9rem;}
 
-/* Config row */
 .cfg-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:.5rem;}
 .cfg-item{display:flex;flex-direction:column;gap:4px;}
 .cfg-item label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
@@ -35,7 +34,6 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
 }
 .cfg-item select:focus,.cfg-item input[type=number]:focus{border-color:var(--gold);}
 
-/* grupos grid — dinâmico */
 .groups-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;}
 .group-input-wrap{display:flex;flex-direction:column;gap:3px;}
 .group-input-wrap label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;}
@@ -43,7 +41,6 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
 .group-input-wrap input:focus{border-color:var(--gold);}
 .group-input-wrap input::placeholder{color:#bbb;}
 
-/* hint penalty selector */
 .penalty-opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
 .penalty-opt{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;transition:all .15s;user-select:none;}
 .penalty-opt:hover{border-color:var(--hint);}
@@ -65,6 +62,13 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
 #sv-container{position:absolute;inset:0;}
 #sv-container iframe{width:100%;height:100%;border:none;}
 
+#sv-loading{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(0,0,0,.75);color:#fff;padding:12px 24px;border-radius:20px;
+  z-index:50;font-size:14px;pointer-events:none;display:none;
+  backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.15);
+}
+
 #hud-top{position:absolute;top:0;left:0;right:0;padding:10px 14px;display:flex;align-items:center;gap:8px;background:linear-gradient(to bottom,rgba(255,255,255,.93) 0%,transparent 100%);pointer-events:none;}
 .hud-pill{background:rgba(255,255,255,.93);border:1px solid rgba(0,0,0,.11);border-radius:20px;padding:5px 13px;font-size:13px;color:var(--text);backdrop-filter:blur(4px);pointer-events:auto;white-space:nowrap;}
 .hud-pill strong{color:var(--gold);}
@@ -77,13 +81,15 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
 #minimap-wrap:hover{width:370px;height:290px;}
 #minimap{width:100%;height:100%;}
 
-/* action bar — ÚNICO lugar de dica */
-#action-bar{position:absolute;bottom:14px;right:14px;display:flex;gap:8px;z-index:101;align-items:center;}
+/* action bar */
+#action-bar{position:absolute;bottom:14px;right:14px;display:flex;gap:8px;z-index:101;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
 #btn-hint{background:var(--hint);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;box-shadow:0 3px 10px rgba(29,111,164,.4);white-space:nowrap;}
 #btn-hint:hover:not(:disabled){opacity:.85;}
 #btn-hint:disabled{opacity:.38;cursor:not-allowed;background:#94a3b8;}
 #btn-confirm{background:var(--gold-btn);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;box-shadow:0 3px 14px rgba(200,130,10,.4);display:none;}
 #btn-confirm:hover{opacity:.9;transform:scale(1.02);}
+#btn-reload{background:#555;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;display:none;}
+#btn-reload:hover{opacity:.85;}
 
 #minimap-hint{position:absolute;bottom:224px;right:14px;background:rgba(255,255,255,.92);color:var(--muted);font-size:11px;padding:4px 11px;border-radius:20px;pointer-events:none;z-index:101;white-space:nowrap;border:1px solid var(--border);transition:opacity .3s;}
 
@@ -133,7 +139,6 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
     <p>Identifique locais do mundo pelo Street View</p>
   </div>
 
-  <!-- Configurações da partida -->
   <div class="card">
     <h2>Configurações da partida</h2>
     <div class="cfg-row">
@@ -179,7 +184,6 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
       </div>
     </div>
 
-    <!-- Raio da dica (novo) -->
     <div class="cfg-row" style="margin-top:.5rem;">
       <div class="cfg-item">
         <label>Raio da dica</label>
@@ -193,7 +197,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
     </div>
 
     <div style="margin-top:.75rem;">
-      <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem;">Penalidade por dica (desconto na pontuação)</div>
+      <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem;">Penalidade por dica</div>
       <div class="penalty-opts" id="penalty-opts">
         <div class="penalty-opt" data-v="0.9" onclick="selectPenalty(this)">−10%</div>
         <div class="penalty-opt" data-v="0.8" onclick="selectPenalty(this)">−20%</div>
@@ -210,7 +214,6 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
     </div>
   </div>
 
-  <!-- Nomes dos grupos -->
   <div class="card">
     <h2>Nome dos grupos</h2>
     <div class="groups-grid" id="groups-grid"></div>
@@ -230,6 +233,7 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
 <!-- ══ JOGO ══ -->
 <div id="screen-game">
   <div id="sv-container"><iframe id="sv-iframe" allowfullscreen></iframe></div>
+  <div id="sv-loading">🌐 Carregando local...</div>
   <div id="hud-top">
     <div class="hud-pill" id="timer-pill">—</div>
     <div class="hud-pill">Local <strong id="round-num">1</strong>/<span id="round-total">5</span></div>
@@ -240,9 +244,13 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
   <div id="minimap-wrap"><div id="minimap"></div></div>
   <div id="action-bar">
     <button id="btn-hint" onclick="useHint()">💡 Dica — 2 restantes</button>
+    <button id="btn-reload" onclick="reloadStreetView()">🔄 Recarregar</button>
     <button id="btn-confirm" onclick="confirmGuess()">✓ Confirmar</button>
   </div>
 </div>
+
+<!-- iframe oculto para pré‑carregamento -->
+<iframe id="sv-prefetch" style="display:none;" allowfullscreen></iframe>
 
 <!-- ══ RESULTADO ROUND ══ -->
 <div id="screen-result" style="display:none;flex-direction:column;">
@@ -272,6 +280,26 @@ body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;min
 </div>
 
 <script>
+// ══════════════════════════════════════════════════
+//  CONFIGURAÇÃO DO MAPA EM PORTUGUÊS
+// ══════════════════════════════════════════════════
+// Para exibir nomes de países e cidades em português, use o MapTiler (grátis).
+// 1. Crie uma conta em https://cloud.maptiler.com
+// 2. Obtenha sua chave de API gratuita
+// 3. Substitua 'SUA_CHAVE_MAPTILER' abaixo pela sua chave
+// 4. O mapa usará automaticamente os nomes em português (lang=pt)
+const MAPTILER_KEY = 'OirAeys66HpijFsXiu8s'; // ← coloque sua chave aqui
+
+// URL do tile: se a chave estiver definida, usa MapTiler com labels em pt;
+// caso contrário, mantém o OpenStreetMap padrão (nomes locais).
+const TILE_URL = MAPTILER_KEY && MAPTILER_KEY !== 'SUA_CHAVE_MAPTILER'
+  ? `https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=${MAPTILER_KEY}&lang=pt`
+  : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+const TILE_OPTIONS = MAPTILER_KEY && MAPTILER_KEY !== 'SUA_CHAVE_MAPTILER'
+  ? { maxZoom: 18, tileSize: 512, zoomOffset: -1 }
+  : { maxZoom: 18 };
+
 // ══════════════════════════════════════════════════
 //  50 LOCAIS — edite lat/lng para personalizar
 // ══════════════════════════════════════════════════
@@ -344,6 +372,7 @@ let roundState = {
 let miniMap=null, guessMarker=null, hintCircle=null, resultMap=null;
 let timerInterval=null, timeLeft=0;
 let audioCtx=null, isPlayingMusic=false, musicTO=null;
+let reloadTimeout = null;  // para mostrar botão de recarregar
 
 // ── Setup UI dinâmico ──────────────────────────
 function selectPenalty(el){
@@ -398,20 +427,45 @@ function beginGroupPlay(){
   document.getElementById('screen-transition').style.display='none';
   document.getElementById('screen-game').style.display='block';
   document.getElementById('round-total').textContent=CFG.numRounds;
-  initMiniMap();
-  loadRound();
+  
+  // Aguarda o DOM ser renderizado com as novas dimensões antes de criar o minimapa
+  setTimeout(() => {
+    initMiniMap();
+    loadRound();
+  }, 300);
+  
+  // Garante que o minimapa se ajuste em mudanças de orientação ou zoom no celular
+  window.addEventListener('resize', () => {
+    if(miniMap) setTimeout(() => miniMap.invalidateSize(), 100);
+  });
 }
 
 // ── Mapa ──────────────────────────────────────
 function initMiniMap(){
   document.getElementById('minimap').innerHTML='';
   if(miniMap){try{miniMap.remove();}catch(e){}miniMap=null;}
-  miniMap=L.map('minimap',{zoomControl:false,attributionControl:false,doubleClickZoom:false}).setView([20,0],2);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18}).addTo(miniMap);
-  miniMap.on('click',onMapClick);
+  
+  miniMap = L.map('minimap', {
+    zoomControl: false,
+    attributionControl: false,
+    doubleClickZoom: false,
+    fadeAnimation: false,
+    zoomSnap: 0.5
+  }).setView([20,0],2);
+  
+  L.tileLayer(TILE_URL, TILE_OPTIONS).addTo(miniMap);
+  
+  miniMap.on('click', onMapClick);
+  
+  // Garante que o mapa preencha completamente o container (importante no mobile)
+  setTimeout(() => {
+    if(miniMap) miniMap.invalidateSize();
+  }, 200);
+  
   const wrap=document.getElementById('minimap-wrap');
   wrap.onmouseenter=()=>setTimeout(()=>miniMap&&miniMap.invalidateSize(),310);
   wrap.onmouseleave=()=>setTimeout(()=>miniMap&&miniMap.invalidateSize(),310);
+  wrap.ontouchstart=()=>setTimeout(()=>miniMap&&miniMap.invalidateSize(),310); // mobile
 }
 
 function onMapClick(e){
@@ -446,9 +500,8 @@ function useHint(){
   syncHintButton();
 
   const loc=groupLocations[G][R];
-  // Círculo com raio configurado (em km)
   const radiusKm = CFG.hintRadiusKm;
-  const maxOffsetKm = radiusKm * 0.7;   // garante que o local real fique dentro do círculo
+  const maxOffsetKm = radiusKm * 0.7;
   const angle=Math.random()*2*Math.PI;
   const offsetKm=Math.random()*maxOffsetKm;
   const dLat=(offsetKm/6371)*(180/Math.PI)*Math.sin(angle);
@@ -458,10 +511,46 @@ function useHint(){
 
   if(hintCircle)miniMap.removeLayer(hintCircle);
   hintCircle=L.circle([cLat,cLng],{
-    radius: radiusKm*1000,   // metros
+    radius: radiusKm*1000,
     color:'#1d6fa4',fillColor:'#1d6fa4',fillOpacity:.13,weight:2,dashArray:'6 4'
   }).addTo(miniMap);
   miniMap.fitBounds(hintCircle.getBounds(),{padding:[20,20]});
+}
+
+// ── Street View recarregar ────────────────────
+function reloadStreetView(){
+  const iframe = document.getElementById('sv-iframe');
+  const loading = document.getElementById('sv-loading');
+  if(loading) loading.style.display = 'block';
+  document.getElementById('btn-reload').style.display = 'none';
+  iframe.src = iframe.src; // força recarregamento
+  // reinicia a lógica de hideLoading
+  let loaded = false;
+  const hideLoading = () => { 
+    if(!loaded) { 
+      loaded = true; 
+      if(loading) loading.style.display = 'none'; 
+      document.getElementById('btn-reload').style.display = 'none';
+      if(reloadTimeout) clearTimeout(reloadTimeout);
+    } 
+  };
+  iframe.onload = () => setTimeout(hideLoading, 500);
+  reloadTimeout = setTimeout(() => {
+    // se após 4s o loading ainda está visível, mostra botão de recarregar
+    if(loading && loading.style.display !== 'none'){
+      document.getElementById('btn-reload').style.display = 'inline-block';
+    }
+  }, 4000);
+}
+
+// ── Pré‑carregamento do próximo local ─────────
+function preloadNextRound(){
+  // Pré‑carrega o Street View do próximo local do grupo atual
+  if(R+1 < CFG.numRounds){
+    const nextLoc = groupLocations[G][R+1];
+    const prefetch = document.getElementById('sv-prefetch');
+    prefetch.src = `https://www.google.com/maps?q=${nextLoc.lat},${nextLoc.lng}&layer=c&cbll=${nextLoc.lat},${nextLoc.lng}&cbp=11,0,0,0,0&hl=pt-BR&output=svembed`;
+  }
 }
 
 // ── Round ─────────────────────────────────────
@@ -470,7 +559,11 @@ function loadRound(){
 
   if(guessMarker){miniMap.removeLayer(guessMarker);guessMarker=null;}
   if(hintCircle){miniMap.removeLayer(hintCircle);hintCircle=null;}
-  miniMap.setView([20,0],2);
+  
+  if(miniMap) {
+    miniMap.setView([20,0],2);
+    setTimeout(() => { if(miniMap) miniMap.invalidateSize(); }, 300);
+  }
 
   document.getElementById('btn-confirm').style.display='none';
   document.getElementById('minimap-hint').style.opacity='1';
@@ -482,9 +575,38 @@ function loadRound(){
   syncHintButton();
 
   const loc=groupLocations[G][R];
-  document.getElementById('sv-iframe').src=
-    `https://www.google.com/maps?q=${loc.lat},${loc.lng}&layer=c&cbll=${loc.lat},${loc.lng}&cbp=11,0,0,0,0&hl=pt-BR&output=svembed`;
-
+  const iframe = document.getElementById('sv-iframe');
+  const loading = document.getElementById('sv-loading');
+  const btnReload = document.getElementById('btn-reload');
+  
+  // Mostra indicador de carregamento e esconde botão de recarregar
+  if(loading) loading.style.display = 'block';
+  btnReload.style.display = 'none';
+  
+  iframe.src = `https://www.google.com/maps?q=${loc.lat},${loc.lng}&layer=c&cbll=${loc.lat},${loc.lng}&cbp=11,0,0,0,0&hl=pt-BR&output=svembed`;
+  
+  let loaded = false;
+  const hideLoading = () => { 
+    if(!loaded) { 
+      loaded = true; 
+      if(loading) loading.style.display = 'none'; 
+      btnReload.style.display = 'none';
+      if(reloadTimeout) clearTimeout(reloadTimeout);
+    } 
+  };
+  
+  iframe.onload = () => setTimeout(hideLoading, 500);
+  
+  // Se após 5s o loading ainda estiver visível, mostra botão de recarregar
+  reloadTimeout = setTimeout(() => {
+    if(loading && loading.style.display !== 'none'){
+      btnReload.style.display = 'inline-block';
+    }
+  }, 5000);
+  
+  // Inicia o pré‑carregamento do próximo local em segundo plano
+  setTimeout(preloadNextRound, 1000);
+  
   startTimer();
 }
 
@@ -534,7 +656,7 @@ function showRoundResult(loc,distKm,score){
   if(resultMap){try{resultMap.remove();}catch(e){}resultMap=null;}
   const zoom=distKm&&distKm<100?8:distKm&&distKm<500?5:3;
   resultMap=L.map(c,{zoomControl:false,attributionControl:false}).setView([loc.lat,loc.lng],zoom);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(resultMap);
+  L.tileLayer(TILE_URL, TILE_OPTIONS).addTo(resultMap);
   L.marker([loc.lat,loc.lng],{
     icon:L.divIcon({html:'<div style="background:#0d7a5f;width:14px;height:14px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>',iconSize:[14,14],iconAnchor:[7,7]})
   }).addTo(resultMap).bindPopup(`✅ ${loc.name}`).openPopup();
